@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: prod
+  application:
+    name: HOI4ColdWar
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+      additional-exclude: static/**
+  main:
+    banner-mode: off
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+  global-config:
+    banner: off
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    name: 开发数据源
+    url: jdbc:mysql://localhost:3306/钢铁雄心4冷战?serverTimezone=UTC
+    username: root
+    password: root
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    name: 生产数据源
+    url: jdbc:mysql://localhost:3306/钢铁雄心4冷战?serverTimezone=UTC
+    #    url: jdbc:mysql://localhost:3306/钢铁雄心4五六之路?serverTimezone=UTC
+    username: root
+    password: root
