@@ -1,7 +1,5 @@
 package com.example.hoi4translation;
 
-import cn.hutool.core.util.StrUtil;
-import com.example.hoi4translation.domain.entity.HistoryUnit;
 import com.example.hoi4translation.filter.Hoi4Filter;
 import com.example.hoi4translation.service.FileService;
 import com.example.hoi4translation.service.ParatranzService;
@@ -11,10 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @SpringBootTest
@@ -55,40 +49,13 @@ class Hoi4TheRoadTo56ApplicationTests {
 
     @Test
     @DisplayName("从平台导入词条")
-    void t4() { // 从平台导入词条
+    void t4() {
         paratranzService.importParatranz(5762, "d61cac8fc2aaf5dc4a4d84b7cfe223c6");
     }
 
     @Test
     @DisplayName("导出词条到平台")
-    void t5() { // 导出词条到平台
+    void t5() {
         paratranzService.exportParatranz(5762, "d61cac8fc2aaf5dc4a4d84b7cfe223c6");
-    }
-
-    @Test
-    void t6() throws ClassNotFoundException, SQLException {
-        List<HistoryUnit> list = new ArrayList<>();
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/钢铁雄心4五六之路?serverTimezone=UTC", "root", "root");
-        PreparedStatement preparedStatement = conn.prepareStatement("select * from `history/units` where translation = ''");
-        ResultSet rs = preparedStatement.executeQuery();
-        while (rs.next()) {
-            list.add(HistoryUnit.builder().original(rs.getString(1)).translation(rs.getString(2)).build());
-        }
-
-
-        Connection conn2 = DriverManager.getConnection("jdbc:mysql://localhost:3306/hoi4?serverTimezone=UTC", "root", "root");
-        for (HistoryUnit one : list) {
-            PreparedStatement prepared = conn2.prepareStatement("select * from `history/units` where original = ?");
-            prepared.setString(1, one.getOriginal());
-            ResultSet resultSet = prepared.executeQuery();
-            if (resultSet.next()) {
-                if (StrUtil.isNotBlank(resultSet.getString(3))) {
-                    one.setTranslation(resultSet.getString(3));
-                    System.out.println(one);
-//                    SpringUtil.getBean(HistoryUnitService.class).updateById(one);
-                }
-            }
-        }
     }
 }
