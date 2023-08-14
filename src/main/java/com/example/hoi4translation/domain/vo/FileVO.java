@@ -15,14 +15,14 @@ public class FileVO {
     private String name;
     private Integer project;
     private String format;
-    private Integer total;
-    private Integer translated;
-    private Integer disputed;
-    private Integer checked;
-    private Integer reviewed;
-    private Integer hidden;
-    private Integer locked;
-    private Integer words;
+    private Integer total; // 文件总词条数
+    private Integer translated; // 已翻译词条数
+    private Integer disputed; // 有疑问的词条数
+    private Integer checked; // 已检查的词条数
+    private Integer reviewed; // 已审核的词条数
+    private Integer hidden; // 已隐藏的词条数
+    private Integer locked; // 已锁定的词条数
+    private Integer words; // 总词数
     private String hash;
     private String extra;
     private String folder;
