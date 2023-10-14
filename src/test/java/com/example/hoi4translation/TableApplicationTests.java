@@ -22,6 +22,8 @@ class TableApplicationTests {
     @Autowired
     private NationalFocusService nationalFocusService;
     @Autowired
+    private ActionService actionService;
+    @Autowired
     private ScriptedEffectService scriptedEffectService;
     @Autowired
     private UnitsNameService unitsNameService;
@@ -89,8 +91,34 @@ class TableApplicationTests {
     }
 
     @Test
-    @DisplayName("覆盖表common/decisions相同词条到表events")
+    @DisplayName("覆盖表common/decisions相同词条到表common/national_focus")
     void t5() {
+        decisionService.list(new LambdaQueryWrapper<Decision>().ne(Decision::getTranslation, "")).forEach(item -> {
+            NationalFocus one = nationalFocusService.getById(item.getOriginal());
+            if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
+                one.setTranslation(item.getTranslation());
+//                nationalFocusService.updateById(one);
+                log.info("更新词条：{}", one);
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("覆盖表common/decisions相同词条到表common/on_actions")
+    void t6() {
+        decisionService.list(new LambdaQueryWrapper<Decision>().ne(Decision::getTranslation, "")).forEach(item -> {
+            Action one = actionService.getById(item.getOriginal());
+            if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
+                one.setTranslation(item.getTranslation());
+//                actionService.updateById(one);
+                log.info("更新词条：{}", one);
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("覆盖表common/decisions相同词条到表events")
+    void t7() {
         decisionService.list(new LambdaQueryWrapper<Decision>().ne(Decision::getTranslation, "")).forEach(item -> {
             Event one = eventService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
@@ -103,7 +131,7 @@ class TableApplicationTests {
 
     @Test
     @DisplayName("覆盖表common/decisions相同词条到表history/countries")
-    void t6() {
+    void t8() {
         decisionService.list(new LambdaQueryWrapper<Decision>().ne(Decision::getTranslation, "")).forEach(item -> {
             HistoryCountry one = historyCountryService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
@@ -116,7 +144,7 @@ class TableApplicationTests {
 
     @Test
     @DisplayName("覆盖表common/national_focus相同词条到表events")
-    void t7() {
+    void t9() {
         nationalFocusService.list(new LambdaQueryWrapper<NationalFocus>().ne(NationalFocus::getTranslation, "")).forEach(item -> {
             Event one = eventService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
@@ -129,7 +157,7 @@ class TableApplicationTests {
 
     @Test
     @DisplayName("覆盖表common/national_focus相同词条到表history/countries")
-    void t8() {
+    void t10() {
         nationalFocusService.list(new LambdaQueryWrapper<NationalFocus>().ne(NationalFocus::getTranslation, "")).forEach(item -> {
             HistoryCountry one = historyCountryService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
@@ -142,7 +170,7 @@ class TableApplicationTests {
 
     @Test
     @DisplayName("覆盖表common/units/names相同词条到表history/units")
-    void t9() {
+    void t11() {
         unitsNameService.list(new LambdaQueryWrapper<UnitsName>().ne(UnitsName::getTranslation, "")).forEach(item -> {
             HistoryUnit one = historyUnitService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
@@ -155,7 +183,7 @@ class TableApplicationTests {
 
     @Test
     @DisplayName("覆盖表common/units/names_divisions相同词条到表history/units")
-    void t10() {
+    void t12() {
         namesDivisionService.list(new LambdaQueryWrapper<NamesDivision>().ne(NamesDivision::getTranslation, "")).forEach(item -> {
             HistoryUnit one = historyUnitService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
@@ -168,7 +196,7 @@ class TableApplicationTests {
 
     @Test
     @DisplayName("覆盖表common/units/names_ships相同词条到表history/units")
-    void t11() {
+    void t13() {
         namesShipService.list(new LambdaQueryWrapper<NamesShip>().ne(NamesShip::getTranslation, "")).forEach(item -> {
             HistoryUnit one = historyUnitService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
@@ -181,7 +209,7 @@ class TableApplicationTests {
 
     @Test
     @DisplayName("覆盖表events相同词条到表history/countries")
-    void t12() {
+    void t14() {
         eventService.list(new LambdaQueryWrapper<Event>().ne(Event::getTranslation, "")).forEach(item -> {
             HistoryCountry one = historyCountryService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {
@@ -194,7 +222,7 @@ class TableApplicationTests {
 
     @Test
     @DisplayName("覆盖表history/countries相同词条到表history/units")
-    void t13() {
+    void t15() {
         historyCountryService.list(new LambdaQueryWrapper<HistoryCountry>().ne(HistoryCountry::getTranslation, "")).forEach(item -> {
             HistoryUnit one = historyUnitService.getById(item.getOriginal());
             if (one != null && !StrUtil.equals(item.getTranslation(), one.getTranslation())) {

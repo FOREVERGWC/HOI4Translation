@@ -3,6 +3,7 @@ package com.example.hoi4translation.service.impl;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -16,10 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -45,6 +43,16 @@ public class ParatranzServiceImpl implements ParatranzService {
                         .flatMap(List::stream)
                         .toList().stream())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<StringVO> getStringsByProjectIdAndOriginalAndAndAuthorization(Integer projectId, String original, String authorization) {
+        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?original%40={}", projectId, original.replaceAll(" ", "+")); //
+        HttpResponse response = HttpRequest.get(url).auth(authorization).execute();
+        if (response.isOk()) {
+            return JSONUtil.toBean(response.body(), PageVO.class).getResults();
+        }
+        return null;
     }
 
     @Override
@@ -121,16 +129,21 @@ public class ParatranzServiceImpl implements ParatranzService {
                                 return false;
                             }
                         })
-//                        .forEach(result -> log.info("平台词条原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), SpringUtil.getBean(sClass).getById(result.getOriginal()).getTranslation()));
                         .forEach(result -> {
-                            String url2 = StrUtil.format("https://paratranz.cn/api/projects/{}/strings/{}", file.getProject(), result.getId());
-                            Map<String, Object> map = new HashMap<>();
-                            map.put("translation", result.getTranslation());
-                            map.put("stage", 1);
-                            map.put("uid", null);
-                            String body2 = HttpRequest.put(url2).auth(authorization).contentType("application/json").body(JSONUtil.toJsonStr(map, jsonConfig)).execute().body();
-                            log.info("已更新词条：{}", body2);
+                            String translation = SpringUtil.getBean(sClass).getById(result.getOriginal()).getTranslation();
+                            if (!Objects.equals(translation, result.getTranslation())) {
+                                log.info("平台词条原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), translation);
+                            }
                         });
+//                        .forEach(result -> {
+//                            String url2 = StrUtil.format("https://paratranz.cn/api/projects/{}/strings/{}", file.getProject(), result.getId());
+//                            Map<String, Object> map = new HashMap<>();
+//                            map.put("translation", result.getTranslation());
+//                            map.put("stage", 1);
+//                            map.put("uid", null);
+//                            String body2 = HttpRequest.put(url2).auth(authorization).contentType("application/json").body(JSONUtil.toJsonStr(map, jsonConfig)).execute().body();
+//                            log.info("已更新词条：{}", body2);
+//                        });
             }
         });
     }
