@@ -122,17 +122,14 @@ public class ParatranzServiceImpl implements ParatranzService {
                 JSONUtil.toBean(body, PageVO.class).getResults().stream()
                         .filter(result -> {
                             T one = SpringUtil.getBean(sClass).getById(result.getOriginal());
+                            if (one != null && !Objects.equals(one.getTranslation(), result.getTranslation())) {
+                                log.info("平台词条原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), one.getTranslation());
+                            }
                             if (one != null && !StrUtil.equals(one.getTranslation(), result.getTranslation())) {
                                 result.setTranslation(one.getTranslation());
                                 return true;
                             } else {
                                 return false;
-                            }
-                        })
-                        .forEach(result -> {
-                            String translation = SpringUtil.getBean(sClass).getById(result.getOriginal()).getTranslation();
-                            if (!Objects.equals(translation, result.getTranslation())) {
-                                log.info("平台词条原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), translation);
                             }
                         });
 //                        .forEach(result -> {

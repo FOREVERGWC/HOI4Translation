@@ -12,11 +12,10 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 public class ParadoxParser {
-    private final JSONObject json = new JSONObject();
-    private final Stack<String> paths = new Stack<>();
-
     private static final int EQUAL = '=';
     private static final int POUND = '#';
+    private final JSONObject json = new JSONObject();
+    private final Stack<String> paths = new Stack<>();
 
     public JSONObject parse(String content) {
         content = Arrays.stream(content.split("\\r\\n|\\n|\\r"))
@@ -208,7 +207,12 @@ public class ParadoxParser {
         return string;
     }
 
-    // 处理转义嵌套结构
+    /**
+     * 处理转义嵌套结构
+     *
+     * @param json JSON对象
+     * @return JSON对象
+     */
     private JSONObject handleNest(JSONObject json) {
         for (String key : json.keySet()) {
             Object value = json.get(key);
