@@ -43,6 +43,7 @@ class Hoi4TranslationApplicationTests {
     private final String ideas = "民族精神";
     private final String bonus = "研究加成";
     private final String codeName = "间谍代号";
+
     @Autowired
     private Hoi4Filter hoi4Filter;
 
@@ -58,95 +59,109 @@ class Hoi4TranslationApplicationTests {
                 .forEach((directory, fileList) -> {
                     directory = FileUtil.getAbsolutePath(directory);
                     switch (directory) {
-//                        case "/common/characters/" -> {
-//                            List<StringVO> vos = fileList.stream()
-//                                    .map(file -> {
-//                                        ParadoxParser parser = new ParadoxParser();
-//                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
-//                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "name");
-//                                    })
-//                                    .flatMap(Collection::stream)
-//                                    .toList();
-//                            list.addAll(vos);
-//                        }
-//                        case "/common/decisions/", "/common/decisions/categories/", "/common/ideas/", "/common/national_focus/", "/common/on_actions/", "/common/operations/", "/common/scripted_effects/", "/common/scripted_triggers/", "/events/", "/history/countries/", "/history/units/" -> {
-//                            List<StringVO> vos = fileList.stream()
-//                                    .map(file -> {
-//                                        ParadoxParser parser = new ParadoxParser();
-//                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
-//                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", keys);
-//                                    })
-//                                    .flatMap(Collection::stream)
-//                                    .toList();
-//                            list.addAll(vos);
-//                        }
-//                        case "/common/intelligence_agencies/" -> {
-//                            List<StringVO> vos = fileList.stream()
-//                                    .map(file -> {
-//                                        ParadoxParser parser = new ParadoxParser();
-//                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
-//                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "names");
-//                                    })
-//                                    .flatMap(Collection::stream)
-//                                    .toList();
-//                            list.addAll(vos);
-//                        }
-//                        case "/common/names/" -> {
-//                            List<StringVO> vos = fileList.stream()
-//                                    .map(file -> {
-//                                        ParadoxParser parser = new ParadoxParser();
-//                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
-//                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "names", "surnames", "callsigns");
-//                                    })
-//                                    .flatMap(Collection::stream)
-//                                    .toList();
-//                            list.addAll(vos);
-//                        }
-//                case "/common/units/codenames_operatives/" -> {
-//                    List<StringVO> vos =fileList.stream()
-//                            .map(file -> {
-//                                ParadoxParser parser = new ParadoxParser();
-//                                JSONObject object = parser.parse(FileUtil.readUtf8String(file));
-//                                return ParadoxUtils.getString(object, new ArrayList<>(), "", "fallback_name", "unique");
-//                            })
-//                            .flatMap(Collection::stream)
-//                            .toList();
-//                    List<Word> codeNames = vos.stream().map(vo -> Word.builder().original(vo.getOriginal()).key(codeName).translation("").build()).toList();
-//                    words.addAll(codeNames);
-//                }
-//                case "/common/units/names_ships/" -> {
-//                    List<StringVO> vos =fileList.stream()
-//                            .map(file -> {
-//                                ParadoxParser parser = new ParadoxParser();
-//                                JSONObject object = parser.parse(FileUtil.readUtf8String(file));
-//                                return ParadoxUtils.getString(object, new ArrayList<>(), "", "fallback_name", "unique");
-//                            })
-//                            .flatMap(Collection::stream)
-//                            .toList();
-//                    List<Word> shipNames = vos.stream().map(vo -> Word.builder().original(vo.getOriginal()).key(shipName).translation("").build()).toList();
-//                    words.addAll(shipNames);
-//                }
-                case "/common/units/names/" -> {
-                    List<StringVO> vos =fileList.stream()
+                        case "/common/characters/" -> {
+                            List<StringVO> vos = fileList.stream()
+                                    .map(file -> {
+                                        ParadoxParser parser = new ParadoxParser();
+                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
+                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "name");
+                                    })
+                                    .flatMap(Collection::stream)
+                                    .toList();
+                            list.addAll(vos);
+                        }
+                        case "/common/decisions/", "/common/decisions/categories/", "/common/ideas/", "/common/national_focus/", "/common/on_actions/", "/common/operations/", "/common/scripted_effects/", "/common/scripted_triggers/", "/events/", "/history/countries/", "/history/units/" -> {
+                            List<StringVO> vos = fileList.stream()
+                                    .map(file -> {
+                                        ParadoxParser parser = new ParadoxParser();
+                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
+                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", keys);
+                                    })
+                                    .flatMap(Collection::stream)
+                                    .toList();
+                            list.addAll(vos);
+                        }
+                        case "/common/intelligence_agencies/" -> {
+                            List<StringVO> vos = fileList.stream()
+                                    .map(file -> {
+                                        ParadoxParser parser = new ParadoxParser();
+                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
+                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "names");
+                                    })
+                                    .flatMap(Collection::stream)
+                                    .toList();
+                            list.addAll(vos);
+                        }
+                        case "/common/names/" -> {
+                            List<StringVO> vos = fileList.stream()
+                                    .map(file -> {
+                                        ParadoxParser parser = new ParadoxParser();
+                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
+                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "names", "surnames", "callsigns");
+                                    })
+                                    .flatMap(Collection::stream)
+                                    .toList();
+                            list.addAll(vos);
+                        }
+                        case "/common/units/codenames_operatives/" -> {
+                            List<StringVO> vos = fileList.stream()
+                                    .map(file -> {
+                                        ParadoxParser parser = new ParadoxParser();
+                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
+                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "fallback_name", "unique");
+                                    })
+                                    .flatMap(Collection::stream)
+                                    .toList();
+                            List<Word> codeNames = vos.stream().map(vo -> Word.builder().original(vo.getOriginal()).key(codeName).translation("").build()).toList();
+                            words.addAll(codeNames);
+                        }
+                        case "/common/units/names_ships/" -> {
+                            List<StringVO> vos = fileList.stream()
+                                    .map(file -> {
+                                        ParadoxParser parser = new ParadoxParser();
+                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
+                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "fallback_name", "unique");
+                                    })
+                                    .flatMap(Collection::stream)
+                                    .toList();
+                            List<Word> shipNames = vos.stream().map(vo -> Word.builder().original(vo.getOriginal()).key(shipName).translation("").build()).toList();
+                            words.addAll(shipNames);
+                        }
+                        case "/common/units/names/" -> {
+                            List<StringVO> vos = fileList.stream()
                                     .map(file -> {
                                         ParadoxParser parser = new ParadoxParser();
                                         JSONObject object = parser.parse(FileUtil.readUtf8String(file));
                                         return ParadoxUtils.getString(object, new ArrayList<>(), "", "generic", "unique");
                                     })
-                            .flatMap(Collection::stream)
-                            .toList();
-                    list.addAll(vos);
-                }
-//                case "/common/units/names_division/", "/common/units/names_divisions/" -> fileList.forEach(file -> {
-//                    ParadoxParser parser = new ParadoxParser();
-//                    JSONObject object = parser.parse(FileUtil.readUtf8String(file));
-//                    ParadoxUtils.getString(object, "", "name", "fallback_name");
-//                });
-//                case "/common/units/names_railway_guns/" -> fileList.forEach(file -> {
-//                    ParadoxParser parser = new ParadoxParser();
-//                    JSONObject object = parser.parse(FileUtil.readUtf8String(file));
-//                    ParadoxUtils.getString(object, "", "fallback_name");
-//                });
+                                    .flatMap(Collection::stream)
+                                    .toList();
+                            list.addAll(vos);
+                        }
+                        case "/common/units/names_division/", "/common/units/names_divisions/" -> {
+                            List<Word> units = fileList.stream()
+                                    .map(file -> {
+                                        ParadoxParser parser = new ParadoxParser();
+                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
+                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "name", "fallback_name");
+                                    })
+                                    .flatMap(Collection::stream)
+                                    .map(item -> Word.builder().original(item.getOriginal()).key(unitName).translation("").build())
+                                    .toList();
+                            words.addAll(units);
+                        }
+                        case "/common/units/names_railway_guns/" -> {
+                            List<Word> railwayGuns = fileList.stream()
+                                    .map(file -> {
+                                        ParadoxParser parser = new ParadoxParser();
+                                        JSONObject object = parser.parse(FileUtil.readUtf8String(file));
+                                        return ParadoxUtils.getString(object, new ArrayList<>(), "", "fallback_name");
+                                    })
+                                    .flatMap(Collection::stream)
+                                    .map(item -> Word.builder().original(item.getOriginal()).key(railwayGun).translation("").build())
+                                    .toList();
+                            words.addAll(railwayGuns);
+                        }
                     }
                 });
         FileUtil.writeUtf8String("", "C:\\Users\\FOREVERGWC\\IdeaProjects\\HOI4Translation\\src\\main\\java\\com\\example\\hoi4translation\\util\\Info.txt");
@@ -164,7 +179,8 @@ class Hoi4TranslationApplicationTests {
                     || ReUtil.isMatch(".*\\|set_country_leader_name(\\$\\$[0-9a-fA-F]+)?\\|name$", key)
                     || ReUtil.isMatch("^ideas\\|political_advisor\\|([^|]+)\\|name$", key)
                     || StrUtil.endWith(key, "|officer|name")
-                    || StrUtil.endWith(key, "|add_corps_commander_role|name")) {
+                    || StrUtil.endWith(key, "|add_corps_commander_role|name")
+                    || StrUtil.endWith(key, "|set_character_name|name")) {
                 // 人名
                 words.add(Word.builder().original(val).key(name).translation("").build());
             } else if (StrUtil.endWith(key, "|set_state_name") || ReUtil.isMatch(".*\\|set_province_name(\\$\\$[0-9a-fA-F]+)?\\|name$", key)) {
@@ -182,7 +198,7 @@ class Hoi4TranslationApplicationTests {
                     || StrUtil.endWith(key, "|division_template")
                     || StrUtil.endWith(key, "|has_template")
                     || StrUtil.endWith(key, "|template_name")
-                    || ReUtil.isMatch("[^|]+\\|(infantry|cavalry|light_armor|medium_armor|motorized|mountaineers)\\|generic\\|[^|]+", key)) {
+                    || ReUtil.isMatch("[^|]+\\|(infantry|cavalry|motorized|mechanized|light_armor|medium_armor|heavy_armor|modern_armor|mountaineers|marine|paratrooper|garrison|militia)\\|generic\\|[^|]+", key)) {
                 // 部队
                 words.add(Word.builder().original(val).key(unitName).translation("").build());
             } else if (StrUtil.endWith(key, "|desc")
@@ -235,7 +251,7 @@ class Hoi4TranslationApplicationTests {
                 // 舰队
                 words.add(Word.builder().original(val).key(fleet).translation("").build());
             } else if (ReUtil.isMatch("^air_wings\\|(\\d+)?\\|name$", key)
-                    || ReUtil.isMatch("[^|]+\\|(?i)(cv_small_plane_airframe|cv_small_plane_cas_airframe|cv_small_plane_naval_bomber_airframe|small_plane_airframe|small_plane_cas_airframe|small_plane_naval_bomber_airframe|medium_plane_airframe|medium_plane_scout_plane_airframe|medium_plane_fighter_airframe|large_plane_airframe|large_plane_maritime_patrol_plane_airframe|transport_plane_equipment|jet_fighter_equipment)\\|(unique|generic)\\|[^|]+", key)) {
+                    || ReUtil.isMatch("[^|]+\\|(?i)(cv_small_plane_airframe|cv_small_plane_cas_airframe|cv_small_plane_naval_bomber_airframe|small_plane_airframe|small_plane_cas_airframe|small_plane_naval_bomber_airframe|medium_plane_airframe|medium_plane_scout_plane_airframe|medium_plane_fighter_airframe|large_plane_airframe|large_plane_maritime_patrol_plane_airframe|transport_plane_equipment|jet_fighter_equipment|jet_tac_bomber_equipment|jet_strat_bomber_equipment|small_plane_suicide_airframe|cv_small_plane_suicide_airframe|fighter_equipment|fighter_bomber_equipment|heavy_fighter_equipment|hfighter_bomber_equipment|CAS_equipment|cv_fighter_equipment|cv_CAS_equipment|cv_nav_bomber_equipment|tac_bomber_equipment|nav_bomber_equipment|strat_bomber_equipment|strat_maritime_equipment|flying_boat_equipment|scout_plane_equipment|jet_strategic_bomber_equipment|med_maritime_equipment|strategic_bomber_equipment|rocket_interceptor_equipment|strat_maritime_equipment_equipment)(\\$\\$[0-9a-fA-F]+)?\\|(unique|generic)\\|[^|]+", key)) {
                 // 飞行联队
                 words.add(Word.builder().original(val).key(wing).translation("").build());
             } else if (ReUtil.isMatch(".*\\|create_railway_gun(\\$\\$[0-9a-fA-F]+)?\\|name$", key)) {
@@ -263,6 +279,9 @@ class Hoi4TranslationApplicationTests {
                     || StrUtil.endWith(key, "|add_doctrine_cost_reduction|name")) {
                 // 研究加成
                 words.add(Word.builder().original(val).key(bonus).translation("").build());
+            } else if (StrUtil.startWith(key, "generic|codename|unique|")) {
+                // 间谍代号
+                words.add(Word.builder().original(val).key(codeName).translation("").build());
             } else {
                 FileUtil.appendUtf8String(vo + "\n", "C:\\Users\\FOREVERGWC\\IdeaProjects\\HOI4Translation\\src\\main\\java\\com\\example\\hoi4translation\\util\\Info.txt");
             }

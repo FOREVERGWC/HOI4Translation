@@ -10,13 +10,34 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StringVO {
-    private Long id; // 词条ID
+    /**
+     * 词条ID
+     */
+    private Long id;
+    /**
+     * createdAt
+     */
     private String createdAt;
+    /**
+     * updatedAt
+     */
     private String updatedAt;
-    private String key; // 词条键值，文件内必须唯一
-    private String original; // 词条原文
-    private String translation; // 词条译文
-    private FileVO file; // 词条所属的文件ID
+    /**
+     * 词条键值，文件内必须唯一
+     */
+    private String key;
+    /**
+     * 词条原文
+     */
+    private String original;
+    /**
+     * 词条译文
+     */
+    private String translation;
+    /**
+     * 词条所属的文件ID
+     */
+    private FileVO file;
     private Integer stage; // 词条状态
     private Integer project;
     private String uid; // 词条最后编辑用户的ID

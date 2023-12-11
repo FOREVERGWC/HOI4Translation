@@ -179,7 +179,7 @@ class Hoi4ApplicationTests {
         String authorization = "d61cac8fc2aaf5dc4a4d84b7cfe223c6";
 
         for (int i = 1; i < 1000; i++) {
-            String stringUrl = StrUtil.format("https://paratranz.cn/api/projects/5239/strings?file=765698&stage=0&pageSize=800&page={}", i);
+            String stringUrl = StrUtil.format("https://paratranz.cn/api/projects/5239/strings?file=1169030&stage=0&pageSize=800&page={}", i);
             try (HttpResponse response = HttpUtil.createGet(stringUrl).auth(authorization).execute()) {
                 if (!response.isOk()) {
                     return;
