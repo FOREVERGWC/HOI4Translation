@@ -2,9 +2,11 @@ package com.example.hoi4translation.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import cn.hutool.http.ContentType;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONConfig;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.hoi4translation.domain.entity.Character;
@@ -16,6 +18,7 @@ import com.example.hoi4translation.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,30 +30,84 @@ public class ParatranzServiceImpl implements ParatranzService {
     @Override
     public List<FileVO> getFilesByProjectIdAndAuthorization(Integer projectId, String authorization) {
         String url = StrUtil.format("https://paratranz.cn/api/projects/{}/files", projectId);
-        String body = HttpRequest.get(url).auth(authorization).execute().body();
-        return JSONUtil.toList(body, FileVO.class);
+        try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
+            return JSONUtil.toList(response.body(), FileVO.class);
+        }
+    }
+
+    @Override
+    public Map<String, Long> getFiles(Integer projectId, String authorization) {
+        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/files", projectId);
+        try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
+            List<FileVO> vos = JSONUtil.toList(response.body(), FileVO.class);
+            return vos.stream().collect(Collectors.toMap(FileVO::getName, FileVO::getId));
+        }
+    }
+
+    @Override
+    public void uploadFile(Integer projectId, String authorization, File file, String path) {
+        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/files", projectId);
+        try (HttpResponse response = HttpRequest.post(url) //
+                .auth(authorization) //
+                .contentType(ContentType.MULTIPART.getValue()) //
+                .form("file", file) //
+                .form("filename", file.getName()) //
+                .form("path", path) //
+                .execute()) {
+            JSONObject object = JSONUtil.parseObj(response.body());
+            if (Objects.equals(object.getByPath("status", String.class), "empty")) {
+                return;
+            }
+            FileVO fileVO = object.getByPath("file", FileVO.class);
+            if (fileVO == null) {
+                System.out.println(response.body());
+                System.out.println(StrUtil.format("文件上传失败！路径：{}，名字：{}", path, file.getName()));
+            }
+        }
+    }
+
+    @Override
+    public void updateFile(Integer projectId, String authorization, File file, String path, Long fileId) {
+        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/files/{}", projectId, fileId);
+        try (HttpResponse response = HttpRequest.post(url) //
+                .auth(authorization) //
+                .contentType(ContentType.MULTIPART.getValue()) //
+                .form("file", file) //
+                .form("filename", file.getName()) //
+                .form("path", path) //
+                .execute()) {
+            JSONObject object = JSONUtil.parseObj(response.body());
+            if (Arrays.asList("empty", "hashMatched").contains(object.getByPath("status", String.class))) {
+                return;
+            }
+            FileVO fileVO = object.getByPath("file", FileVO.class);
+            if (fileVO == null) {
+                System.out.println(response.body());
+                System.out.println(StrUtil.format("文件更新失败！路径：{}，名字：{}", path, file.getName()));
+            }
+        }
     }
 
     @Override
     public List<StringVO> getStringsByProjectIdAndAuthorization(Integer projectId, String authorization) {
-        return getFilesByProjectIdAndAuthorization(projectId, authorization).stream()
-                .flatMap(file -> IntStream.rangeClosed(1, (file.getTotal() + 800 - 1) / 800)
-                        .mapToObj(pageNum -> {
+        return getFilesByProjectIdAndAuthorization(projectId, authorization).stream().flatMap(file -> IntStream.rangeClosed(1, (file.getTotal() + 800 - 1) / 800).mapToObj(pageNum -> {
                             String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?file={}&page={}&pageSize=800", projectId, file.getId(), pageNum);
                             return HttpRequest.get(url).auth(authorization).execute().body();
-                        })
-                        .map(body -> JSONUtil.toBean(body, PageVO.class).getResults())
-                        .flatMap(List::stream)
-                        .toList().stream())
+                        }) //
+                        .map(body -> JSONUtil.toBean(body, PageVO.class).getResults()) //
+                        .flatMap(List::stream) //
+                        .toList() //
+                        .stream()) //
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<StringVO> getStringsByProjectIdAndOriginalAndAndAuthorization(Integer projectId, String original, String authorization) {
         String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?original%40={}", projectId, original.replaceAll(" ", "+")); //
-        HttpResponse response = HttpRequest.get(url).auth(authorization).execute();
-        if (response.isOk()) {
-            return JSONUtil.toBean(response.body(), PageVO.class).getResults();
+        try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
+            if (response.isOk()) {
+                return JSONUtil.toBean(response.body(), PageVO.class).getResults();
+            }
         }
         return null;
     }
@@ -59,17 +116,17 @@ public class ParatranzServiceImpl implements ParatranzService {
     public <T extends BaseEntity, S extends IService<T>> void importStrings(List<FileVO> files, String authorization, Class<T> clazz, Class<S> sClass) {
         files.forEach(file -> {
             int pageCount = (file.getTotal() + 800 - 1) / 800;
-            IntStream.rangeClosed(1, pageCount)
+            IntStream.rangeClosed(1, pageCount) //
                     .mapToObj(pageNum -> {
                         String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?file={}&stage=1&stage=2&stage=3&stage=5&stage=9&page={}&pageSize=800", file.getProject(), file.getId(), pageNum);
                         return HttpRequest.get(url).auth(authorization).execute().body();
-                    })
-                    .map(body -> JSONUtil.toBean(body, PageVO.class).getResults())
-                    .flatMap(List::stream)
+                    }) //
+                    .map(body -> JSONUtil.toBean(body, PageVO.class).getResults()) //
+                    .flatMap(List::stream) //
                     .filter(result -> {
                         T one = SpringUtil.getBean(sClass).getById(result.getOriginal());
                         return one != null && StrUtil.isBlank(one.getTranslation());
-                    })
+                    }) //
                     .forEach(result -> {
                         try {
                             T t = clazz.getConstructor(String.class, String.class).newInstance(result.getOriginal(), result.getTranslation());
@@ -83,8 +140,8 @@ public class ParatranzServiceImpl implements ParatranzService {
 
     @Override
     public void importParatranz(Integer projectId, String authorization) {
-        getFilesByProjectIdAndAuthorization(projectId, authorization).stream()
-                .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList()))
+        getFilesByProjectIdAndAuthorization(projectId, authorization).stream() //
+                .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList())) //
                 .forEach((key, value) -> {
                     switch (key) {
                         case "common/characters" -> importStrings(value, authorization, Character.class, CharacterService.class);
@@ -119,19 +176,18 @@ public class ParatranzServiceImpl implements ParatranzService {
             for (int pageNum = 1; pageNum <= pageCount; pageNum++) {
                 String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?file={}&stage=0&stage=1&stage=2&stage=3&stage=5&stage=9&page={}&pageSize=800", file.getProject(), file.getId(), pageNum);
                 String body = HttpRequest.get(url).auth(authorization).execute().body();
-                JSONUtil.toBean(body, PageVO.class).getResults().stream()
-                        .filter(result -> {
-                            T one = SpringUtil.getBean(sClass).getById(result.getOriginal());
-                            if (one != null && !Objects.equals(one.getTranslation(), result.getTranslation())) {
-                                log.info("平台词条原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), one.getTranslation());
-                            }
-                            if (one != null && !StrUtil.equals(one.getTranslation(), result.getTranslation())) {
-                                result.setTranslation(one.getTranslation());
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        });
+                JSONUtil.toBean(body, PageVO.class).getResults().stream().filter(result -> {
+                    T one = SpringUtil.getBean(sClass).getById(result.getOriginal());
+                    if (one != null && !Objects.equals(one.getTranslation(), result.getTranslation())) {
+                        log.info("平台词条原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), one.getTranslation());
+                    }
+                    if (one != null && !StrUtil.equals(one.getTranslation(), result.getTranslation())) {
+                        result.setTranslation(one.getTranslation());
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
 //                        .forEach(result -> {
 //                            String url2 = StrUtil.format("https://paratranz.cn/api/projects/{}/strings/{}", file.getProject(), result.getId());
 //                            Map<String, Object> map = new HashMap<>();
@@ -147,8 +203,8 @@ public class ParatranzServiceImpl implements ParatranzService {
 
     @Override
     public void exportParatranz(Integer projectId, String authorization) {
-        getFilesByProjectIdAndAuthorization(projectId, authorization).stream()
-                .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList()))
+        getFilesByProjectIdAndAuthorization(projectId, authorization).stream() //
+                .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList())) //
                 .forEach((key, value) -> {
                     switch (key) {
                         case "common/characters" -> exportStrings(value, authorization, Character.class, CharacterService.class);

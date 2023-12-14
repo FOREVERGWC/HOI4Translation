@@ -13,6 +13,9 @@ spring:
       additional-exclude: static/**
   main:
     banner-mode: off
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+
 
 mybatis-plus:
   configuration:

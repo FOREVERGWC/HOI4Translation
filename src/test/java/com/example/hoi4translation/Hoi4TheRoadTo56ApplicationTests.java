@@ -1,6 +1,7 @@
 package com.example.hoi4translation;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,6 +30,8 @@ import java.util.stream.Collectors;
 @SpringBootTest
 @DisplayName("56之路")
 class Hoi4TheRoadTo56ApplicationTests {
+    private final Integer projectId = 5762;
+    private final String authorization = "d61cac8fc2aaf5dc4a4d84b7cfe223c6";
     @Autowired
     private FileService fileService;
     @Autowired
@@ -62,19 +66,37 @@ class Hoi4TheRoadTo56ApplicationTests {
     }
 
     @Test
-    @DisplayName("从平台导入词条")
+    @DisplayName("上传56之路文件到平台")
     void t4() {
-        paratranzService.importParatranz(5762, "d61cac8fc2aaf5dc4a4d84b7cfe223c6");
+        Map<String, Long> map = paratranzService.getFiles(projectId, authorization);
+        String dir = "C:\\Users\\FOREVERGWC\\Desktop\\资料\\游戏\\钢铁雄心4\\Mod\\汉化参考\\56之路原版";
+        List<File> files = FileUtil.loopFiles(dir, hoi4Filter);
+        files.forEach(file -> {
+            String path = FileUtil.subPath(dir, file.getParent()); // 相对子路径
+            String fileName = path + "/" + FileUtil.getName(file);
+            Long fileId = map.get(fileName);
+            if (fileId == null) {
+                paratranzService.uploadFile(projectId, authorization, file, path);
+            } else {
+                paratranzService.updateFile(projectId, authorization, file, path, fileId);
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("从平台导入词条")
+    void t5() {
+        paratranzService.importParatranz(projectId, authorization);
     }
 
     @Test
     @DisplayName("导出词条到平台")
-    void t5() {
-        paratranzService.exportParatranz(5762, "d61cac8fc2aaf5dc4a4d84b7cfe223c6");
+    void t6() {
+        paratranzService.exportParatranz(projectId, authorization);
     }
 
     @Test
-    void t6() {
+    void t7() {
         Comparator<Integer> comparator = Comparator.comparingLong(key -> //
                 switch (key) {
                     case 1219 -> 1;

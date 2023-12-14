@@ -1,6 +1,7 @@
 package com.example.hoi4translation;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
@@ -31,6 +33,8 @@ import java.util.stream.Collectors;
 @SpringBootTest
 @DisplayName("原版")
 class Hoi4ApplicationTests {
+    private final Integer projectId = 5239;
+    private final String authorization = "d61cac8fc2aaf5dc4a4d84b7cfe223c6";
     @Autowired
     private FileService fileService;
     @Autowired
@@ -39,7 +43,6 @@ class Hoi4ApplicationTests {
     private Hoi4Filter hoi4Filter;
     @Autowired
     private ParatranzService paratranzService;
-
     @Autowired
     private CharacterService characterService;
     @Autowired
@@ -81,42 +84,39 @@ class Hoi4ApplicationTests {
         projectService.exportProject(file, hoi4Filter);
     }
 
-    // https://paratranz.cn/api/projects/5762/files
-    // POST
-    // 上传文件
-    // file: 二进制文件流
-    // filename: _debug_decisions.txt
-    // path: common/decisions
     @Test
-    @DisplayName("上传文件到平台")
-    void tt() {
-        Integer projectId = 5239;
-        String authorization = "d61cac8fc2aaf5dc4a4d84b7cfe223c6";
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("file", "");
-        requestBody.put("filename", "");
-        requestBody.put("path", "");
-        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/files", projectId);
-        try (HttpResponse response = HttpUtil.createPost(url).auth(authorization).body(JSONUtil.toJsonStr(requestBody)).execute()) {
-            System.out.println(response.body());
-        }
+    @DisplayName("上传原版文件到平台")
+    void t4() {
+        Map<String, Long> map = paratranzService.getFiles(projectId, authorization);
+        String dir = "C:\\Users\\FOREVERGWC\\Desktop\\资料\\游戏\\钢铁雄心4\\Mod\\汉化参考\\原版汉化";
+        List<File> files = FileUtil.loopFiles(dir, hoi4Filter);
+        files.forEach(file -> {
+            String path = FileUtil.subPath(dir, file.getParent()); // 相对子路径
+            String fileName = path + "/" + FileUtil.getName(file);
+            Long fileId = map.get(fileName);
+            if (fileId == null) {
+                paratranzService.uploadFile(projectId, authorization, file, path);
+            } else {
+                paratranzService.updateFile(projectId, authorization, file, path, fileId);
+            }
+        });
     }
 
     @Test
     @DisplayName("从平台导入词条")
-    void t4() {
-        paratranzService.importParatranz(5239, "d61cac8fc2aaf5dc4a4d84b7cfe223c6");
+    void t5() {
+        paratranzService.importParatranz(projectId, authorization);
     }
 
     @Test
     @DisplayName("导出词条到平台")
-    void t5() {
-        paratranzService.exportParatranz(5239, "d61cac8fc2aaf5dc4a4d84b7cfe223c6");
+    void t6() {
+        paratranzService.exportParatranz(projectId, authorization);
     }
 
     @Test
     @DisplayName("从平台查询相同词条")
-    void t6() {
+    void t7() {
         LambdaQueryWrapper<NamesShip> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(NamesShip::getTranslation, "");
         List<NamesShip> list = namesShipService.list(wrapper);
@@ -133,7 +133,7 @@ class Hoi4ApplicationTests {
     @SneakyThrows
     @Test
     @DisplayName("从hoi4库查询相同词条")
-    void t7() {
+    void t8() {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/hoi4?serverTimezone=UTC", "root", "root");
         LambdaQueryWrapper<HistoryUnit> wrapper = new LambdaQueryWrapper<>();
@@ -165,7 +165,7 @@ class Hoi4ApplicationTests {
     }
 
     @Test
-    void t8() {
+    void t9() {
         Comparator<Integer> comparator = Comparator.comparingLong(key -> //
                 switch (key) {
                     case 5239 -> 1;

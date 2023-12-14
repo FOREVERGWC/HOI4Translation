@@ -6,7 +6,9 @@ import com.example.hoi4translation.domain.vo.FileVO;
 import com.example.hoi4translation.domain.vo.StringVO;
 import org.springframework.stereotype.Repository;
 
+import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface ParatranzService {
@@ -18,6 +20,36 @@ public interface ParatranzService {
      * @return 文件列表
      */
     List<FileVO> getFilesByProjectIdAndAuthorization(Integer projectId, String authorization);
+
+    /**
+     * 根据项目ID和令牌获取文件名与文件ID集合
+     *
+     * @param projectId     项目ID
+     * @param authorization 令牌
+     * @return 文件名与文件ID集合
+     */
+    Map<String, Long> getFiles(Integer projectId, String authorization);
+
+    /**
+     * 上传文件
+     *
+     * @param projectId     项目ID
+     * @param authorization 令牌
+     * @param file          文件对象
+     * @param path          路径
+     */
+    void uploadFile(Integer projectId, String authorization, File file, String path);
+
+    /**
+     * 更新文件
+     *
+     * @param projectId     项目ID
+     * @param authorization 令牌
+     * @param file          文件对象
+     * @param path          路径
+     * @param fileId        文件ID
+     */
+    void updateFile(Integer projectId, String authorization, File file, String path, Long fileId);
 
     /**
      * 根据项目ID和令牌查询项目所有词条
