@@ -240,8 +240,11 @@ public class ParatranzServiceImpl implements ParatranzService {
                                 if (one == null) {
                                     log.info("原文：{}，翻译：{}，数据库不存在该词条！", result.getOriginal(), result.getTranslation());
                                 } else if (StrUtil.isBlank(result.getTranslation()) && StrUtil.isNotBlank(one.getTranslation())) {
-                                    updateString();
-                                    // TODO: 2023/12/15 更新平台词条
+                                    Map<String, Object> map = new HashMap<>();
+                                    map.put("translation", one.getTranslation());
+                                    map.put("stage", 1);
+                                    map.put("uid", null);
+                                    updateString(file.getProject(), result.getId(), authorization, map);
                                 } else if (!Objects.equals(one.getTranslation(), result.getTranslation())) {
                                     log.info("原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), one.getTranslation());
                                 }
@@ -304,15 +307,11 @@ public class ParatranzServiceImpl implements ParatranzService {
 
 
     @Override
-    public void updateString(Integer projectId, Integer stringId, String authorization, Map<String, Object> map) {
+    public void updateString(Integer projectId, Long stringId, String authorization, Map<String, Object> map) {
         JSONConfig jsonConfig = new JSONConfig();
         jsonConfig.setIgnoreNullValue(false);
-        String url2 = StrUtil.format("https://paratranz.cn/api/projects/{}/strings/{}", projectId, stringId);
-//        Map<String, Object> map = new HashMap<>();
-//        map.put("translation", result.getTranslation());
-//        map.put("stage", 1);
-//        map.put("uid", null);
-        try (HttpResponse response = HttpRequest.put(url2).auth(authorization).contentType(ContentType.JSON.getValue()).body(JSONUtil.toJsonStr(map, jsonConfig)).execute()) {
+        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings/{}", projectId, stringId);
+        try (HttpResponse response = HttpRequest.put(url).auth(authorization).contentType(ContentType.JSON.getValue()).body(JSONUtil.toJsonStr(map, jsonConfig)).execute()) {
             String body = response.body();
             log.info("已更新词条：{}", body);
         }

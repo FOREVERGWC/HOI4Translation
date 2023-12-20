@@ -102,7 +102,15 @@ public interface ParatranzService {
 
     <T extends BaseEntity, S extends IService<T>> void exportStrings(List<FileVO> files, String authorization, Class<T> clazz, Class<S> sClass);
 
-    void updateString(Integer projectId, Integer stringId, String authorization, Map<String, Object> map);
+    /**
+     * 更新平台词条
+     *
+     * @param projectId     项目ID
+     * @param stringId      词条ID
+     * @param authorization 令牌
+     * @param map           参数
+     */
+    void updateString(Integer projectId, Long stringId, String authorization, Map<String, Object> map);
 
     /**
      * 导出词条到平台
