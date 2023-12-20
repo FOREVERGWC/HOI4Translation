@@ -84,6 +84,12 @@ class Hoi4TheRoadTo56ApplicationTests {
     }
 
     @Test
+    @DisplayName("从平台对比词条")
+    void t5sfa() {
+        paratranzService.compareParatranz(projectId, authorization);
+    }
+
+    @Test
     @DisplayName("从平台导入词条")
     void t5() {
         paratranzService.importParatranz(projectId, authorization);

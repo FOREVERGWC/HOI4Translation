@@ -73,6 +73,14 @@ public interface ParatranzService {
     <T extends BaseEntity, S extends IService<T>> void importStrings(List<FileVO> files, String authorization, Class<T> clazz, Class<S> sClass);
 
     /**
+     * 对比平台词条
+     *
+     * @param projectId     项目ID
+     * @param authorization 令牌
+     */
+    void compareParatranz(Integer projectId, String authorization);
+
+    /**
      * 从平台导入词条
      *
      * @param projectId     项目ID
@@ -80,7 +88,21 @@ public interface ParatranzService {
      */
     void importParatranz(Integer projectId, String authorization);
 
+    /**
+     * 对比词条
+     *
+     * @param files
+     * @param authorization
+     * @param clazz
+     * @param sClass
+     * @param <T>
+     * @param <S>
+     */
+    <T extends BaseEntity, S extends IService<T>> void compareStrings(List<FileVO> files, String authorization, Class<T> clazz, Class<S> sClass);
+
     <T extends BaseEntity, S extends IService<T>> void exportStrings(List<FileVO> files, String authorization, Class<T> clazz, Class<S> sClass);
+
+    void updateString(Integer projectId, Integer stringId, String authorization, Map<String, Object> map);
 
     /**
      * 导出词条到平台

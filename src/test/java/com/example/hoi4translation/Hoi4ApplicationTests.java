@@ -9,8 +9,10 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.hoi4translation.domain.entity.Character;
 import com.example.hoi4translation.domain.entity.HistoryUnit;
 import com.example.hoi4translation.domain.entity.NamesShip;
+import com.example.hoi4translation.domain.vo.FileVO;
 import com.example.hoi4translation.domain.vo.PageVO;
 import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.domain.vo.SuggestionVO;
@@ -100,6 +102,20 @@ class Hoi4ApplicationTests {
                 paratranzService.updateFile(projectId, authorization, file, path, fileId);
             }
         });
+    }
+
+    @Test
+    @DisplayName("对比词条键值")
+    void tt() {
+        paratranzService.exportParatranz(projectId, authorization);
+//        List<FileVO> files = paratranzService.getFilesByProjectIdAndAuthorization(projectId, authorization);
+//        files.stream() //
+//                .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList())) //
+//                .forEach((key, value) -> {
+//                    switch (key) {
+//                        case "common/characters" -> paratranzService.exportStrings(value, authorization, Character.class, CharacterService.class);
+//                    }
+//                });
     }
 
     @Test
