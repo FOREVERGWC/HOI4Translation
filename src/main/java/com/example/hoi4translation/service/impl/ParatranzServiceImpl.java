@@ -9,13 +9,12 @@ import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.hoi4translation.domain.entity.BaseEntity;
 import com.example.hoi4translation.domain.entity.Character;
+import com.example.hoi4translation.domain.entity.*;
 import com.example.hoi4translation.domain.vo.FileVO;
 import com.example.hoi4translation.domain.vo.PageVO;
 import com.example.hoi4translation.domain.vo.StringVO;
-import com.example.hoi4translation.service.CharacterService;
-import com.example.hoi4translation.service.ParatranzService;
+import com.example.hoi4translation.service.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -150,24 +149,24 @@ public class ParatranzServiceImpl implements ParatranzService {
                 .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList())) //
                 .forEach((key, value) -> {
                     switch (key) {
-                        case "common/characters" -> compareStrings(value, authorization, Character.class, CharacterService.class);
-//                        case "common/decisions", "common/decisions/categories" -> importStrings(value, authorization, Decision.class, DecisionService.class);
-//                        case "common/ideas" -> importStrings(value, authorization, Idea.class, IdeaService.class);
-//                        case "common/intelligence_agencies" -> importStrings(value, authorization, IntelligenceAgency.class, IntelligenceAgencyService.class);
-//                        case "common/names" -> importStrings(value, authorization, Name.class, NameService.class);
-//                        case "common/national_focus" -> importStrings(value, authorization, NationalFocus.class, NationalFocusService.class);
-//                        case "common/on_actions" -> importStrings(value, authorization, Action.class, ActionService.class);
-//                        case "common/operations" -> importStrings(value, authorization, Operation.class, OperationService.class);
-//                        case "common/scripted_effects" -> importStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
-//                        case "common/scripted_triggers" -> importStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
-//                        case "common/units/codenames_operatives" -> importStrings(value, authorization, Codename.class, CodenameService.class);
-//                        case "common/units/names/" -> importStrings(value, authorization, UnitsName.class, UnitsNameService.class);
-//                        case "common/units/names_division", "common/units/names_divisions" -> importStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
-//                        case "common/units/names_railway_guns" -> importStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
-//                        case "common/units/names_ships" -> importStrings(value, authorization, NamesShip.class, NamesShipService.class);
-//                        case "events" -> importStrings(value, authorization, Event.class, EventService.class);
-//                        case "history/countries" -> importStrings(value, authorization, HistoryCountry.class, HistoryCountryService.class);
-//                        case "history/units" -> importStrings(value, authorization, HistoryUnit.class, HistoryUnitService.class);
+//                        case "common/characters" -> compareStrings(value, authorization, Character.class, CharacterService.class);
+//                        case "common/decisions", "common/decisions/categories" -> compareStrings(value, authorization, Decision.class, DecisionService.class);
+//                        case "common/ideas" -> compareStrings(value, authorization, Idea.class, IdeaService.class);
+//                        case "common/intelligence_agencies" -> compareStrings(value, authorization, IntelligenceAgency.class, IntelligenceAgencyService.class);
+//                        case "common/names" -> compareStrings(value, authorization, Name.class, NameService.class);
+//                        case "common/national_focus" -> compareStrings(value, authorization, NationalFocus.class, NationalFocusService.class);
+//                        case "common/on_actions" -> compareStrings(value, authorization, Action.class, ActionService.class);
+//                        case "common/operations" -> compareStrings(value, authorization, Operation.class, OperationService.class);
+//                        case "common/scripted_effects" -> compareStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
+//                        case "common/scripted_triggers" -> compareStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
+//                        case "common/units/codenames_operatives" -> compareStrings(value, authorization, Codename.class, CodenameService.class);
+                        case "common/units/names" -> compareStrings(value, authorization, UnitsName.class, UnitsNameService.class);
+//                        case "common/units/names_division", "common/units/names_divisions" -> compareStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
+//                        case "common/units/names_railway_guns" -> compareStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
+//                        case "common/units/names_ships" -> compareStrings(value, authorization, NamesShip.class, NamesShipService.class);
+//                        case "events" -> compareStrings(value, authorization, Event.class, EventService.class);
+//                        case "history/countries" -> compareStrings(value, authorization, HistoryCountry.class, HistoryCountryService.class);
+//                        case "history/units" -> compareStrings(value, authorization, HistoryUnit.class, HistoryUnitService.class);
                     }
                 });
     }
@@ -236,17 +235,43 @@ public class ParatranzServiceImpl implements ParatranzService {
                     JSONUtil.toBean(response.body(), PageVO.class) //
                             .getResults() //
                             .forEach(result -> {
+                                result.setOriginal(StrUtil.trim(result.getOriginal()));
                                 T one = SpringUtil.getBean(sClass).getById(result.getOriginal());
+                                // 若数据库不存在该词条则跳过
                                 if (one == null) {
-                                    log.info("原文：{}，翻译：{}，数据库不存在该词条！", result.getOriginal(), result.getTranslation());
-                                } else if (StrUtil.isBlank(result.getTranslation()) && StrUtil.isNotBlank(one.getTranslation())) {
-                                    Map<String, Object> map = new HashMap<>();
-                                    map.put("translation", one.getTranslation());
-                                    map.put("stage", 1);
-                                    map.put("uid", null);
-                                    updateString(file.getProject(), result.getId(), authorization, map);
-                                } else if (!Objects.equals(one.getTranslation(), result.getTranslation())) {
-                                    log.info("原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), one.getTranslation());
+                                    return;
+                                }
+                                if (result.getStage() == 0) {
+                                    // 若平台未翻译
+                                    if (StrUtil.isNotBlank(one.getTranslation())) {
+                                        Map<String, Object> map = new HashMap<>();
+                                        map.put("translation", one.getTranslation());
+                                        map.put("stage", 1);
+                                        map.put("uid", null);
+                                        updateString(file.getProject(), result.getId(), authorization, map);
+                                    }
+                                } else if (result.getStage() == 1) {
+                                    // 若平台已翻译，数据库未翻译，覆盖数据库
+                                    if (StrUtil.isNotBlank(result.getTranslation()) && StrUtil.isBlank(one.getTranslation())) {
+                                        one.setTranslation(result.getTranslation().trim());
+                                        SpringUtil.getBean(sClass).updateById(one);
+                                    } else if (StrUtil.isNotBlank(result.getTranslation()) && StrUtil.isNotBlank(one.getTranslation()) && !Objects.equals(result.getTranslation(), one.getTranslation())) {
+                                        // 若平台已翻译，数据库已翻译，且两者译文差异，覆盖平台
+                                        Map<String, Object> map = new HashMap<>();
+                                        map.put("translation", one.getTranslation());
+                                        map.put("stage", 1);
+                                        map.put("uid", null);
+                                        updateString(file.getProject(), result.getId(), authorization, map);
+                                    }
+                                } else if (result.getStage() == 5) {
+                                    // 若平台已审核，数据库未翻译，覆盖数据库
+                                    if (StrUtil.isNotBlank(result.getTranslation()) && StrUtil.isBlank(one.getTranslation())) {
+                                        one.setTranslation(result.getTranslation().trim());
+                                        SpringUtil.getBean(sClass).updateById(one);
+                                    } else if (StrUtil.isNotBlank(result.getTranslation()) && StrUtil.isNotBlank(one.getTranslation()) && !Objects.equals(result.getTranslation(), one.getTranslation())) {
+                                        // 若平台已翻译，数据库已翻译，且两者译文差异，输出差异
+                                        log.info("原文：{}，翻译：{}，数据库翻译：{}", result.getOriginal(), result.getTranslation(), one.getTranslation());
+                                    }
                                 }
                             });
                 }
@@ -262,7 +287,7 @@ public class ParatranzServiceImpl implements ParatranzService {
         files.forEach(file -> {
             int pageCount = (file.getTotal() - 1) / pageSize + 1;
             for (int pageNum = 1; pageNum <= pageCount; pageNum++) {
-                String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?file={}&stage=0&stage=1&stage=2&stage=3&stage=5&stage=9&page={}&pageSize=800", file.getProject(), file.getId(), pageNum);
+                String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?file={}&stage=0&page={}&pageSize=800", file.getProject(), file.getId(), pageNum);
                 try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
                     JSONUtil.toBean(response.body(), PageVO.class) //
                             .getResults() //
@@ -323,7 +348,7 @@ public class ParatranzServiceImpl implements ParatranzService {
                 .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList())) //
                 .forEach((key, value) -> {
                     switch (key) {
-                        case "common/characters" -> exportStrings(value, authorization, Character.class, CharacterService.class);
+//                        case "common/characters" -> exportStrings(value, authorization, Character.class, CharacterService.class);
 //                        case "common/decisions", "common/decisions/categories" -> exportStrings(value, authorization, Decision.class, DecisionService.class);
 //                        case "common/ideas" -> exportStrings(value, authorization, Idea.class, IdeaService.class);
 //                        case "common/intelligence_agencies" -> exportStrings(value, authorization, IntelligenceAgency.class, IntelligenceAgencyService.class);
@@ -334,7 +359,7 @@ public class ParatranzServiceImpl implements ParatranzService {
 //                        case "common/scripted_effects" -> exportStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
 //                        case "common/scripted_triggers" -> exportStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
 //                        case "common/units/codenames_operatives" -> exportStrings(value, authorization, Codename.class, CodenameService.class);
-//                        case "common/units/names/" -> exportStrings(value, authorization, UnitsName.class, UnitsNameService.class);
+                        case "common/units/names" -> exportStrings(value, authorization, UnitsName.class, UnitsNameService.class);
 //                        case "common/units/names_division", "common/units/names_divisions" -> exportStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
 //                        case "common/units/names_railway_guns" -> exportStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
 //                        case "common/units/names_ships" -> exportStrings(value, authorization, NamesShip.class, NamesShipService.class);

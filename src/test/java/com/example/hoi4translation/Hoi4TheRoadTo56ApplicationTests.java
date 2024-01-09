@@ -75,6 +75,7 @@ class Hoi4TheRoadTo56ApplicationTests {
             String path = FileUtil.subPath(dir, file.getParent()); // 相对子路径
             String fileName = path + "/" + FileUtil.getName(file);
             Long fileId = map.get(fileName);
+            // TODO: 2024/1/4 删除平台过时文件
             if (fileId == null) {
                 paratranzService.uploadFile(projectId, authorization, file, path);
             } else {
