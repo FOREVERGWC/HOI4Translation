@@ -34,7 +34,15 @@ public class ParatranzServiceImpl implements ParatranzService {
     public List<FileVO> getFilesByProjectIdAndAuthorization(Integer projectId, String authorization) {
         String url = StrUtil.format("https://paratranz.cn/api/projects/{}/files", projectId);
         try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
-            return JSONUtil.toList(response.body(), FileVO.class);
+            String body = response.body();
+            if (!JSONUtil.isTypeJSON(body)) {
+                int time = Integer.parseInt(response.header("Retry-After"));
+                TimeUnit.SECONDS.sleep(time);
+                return getFilesByProjectIdAndAuthorization(projectId, authorization);
+            }
+            return JSONUtil.toList(body, FileVO.class);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -271,6 +279,12 @@ public class ParatranzServiceImpl implements ParatranzService {
                 String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?file={}&stage=0&stage=1&stage=2&stage=3&stage=5&stage=9&page={}&pageSize=800", file.getProject(), file.getId(), pageNum);
                 try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
                     String body = response.body();
+                    if (!JSONUtil.isTypeJSON(body)) {
+                        pageNum--;
+                        int time = Integer.parseInt(response.header("Retry-After"));
+                        TimeUnit.SECONDS.sleep(time);
+                        continue;
+                    }
                     JSONUtil.toBean(body, PageVO.class) //
                             .getResults() //
                             .forEach(result -> {
@@ -313,9 +327,7 @@ public class ParatranzServiceImpl implements ParatranzService {
                                     }
                                 }
                             });
-                }
-                try {
-                    TimeUnit.SECONDS.sleep(3);
+                    TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

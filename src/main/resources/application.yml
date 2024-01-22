@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: prod
+    active: dev
   application:
     name: HOI4翻译
   devtools:
@@ -33,9 +33,9 @@ spring:
     url: jdbc:mysql://localhost:3306/钢铁雄心4冷战?serverTimezone=UTC
     username: root
     password: root
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 ---
 spring:
   config:
