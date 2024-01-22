@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,7 +57,17 @@ public class ParatranzServiceImpl implements ParatranzService {
                 .form("filename", file.getName()) //
                 .form("path", path) //
                 .execute()) {
-            JSONObject object = JSONUtil.parseObj(response.body());
+            String body = response.body();
+            if (!JSONUtil.isTypeJSON(body)) {
+                if ("Too many requests, please try again later.".equalsIgnoreCase(body)) {
+                    TimeUnit.SECONDS.sleep(5);
+                    uploadFile(projectId, authorization, file, path);
+                } else {
+                    System.out.println(file + "：：" + body);
+                }
+                return;
+            }
+            JSONObject object = JSONUtil.parseObj(body);
             if (Objects.equals(object.getByPath("status", String.class), "empty")) {
                 return;
             }
@@ -65,6 +76,8 @@ public class ParatranzServiceImpl implements ParatranzService {
                 System.out.println(response.body());
                 System.out.println(StrUtil.format("文件上传失败！路径：{}，名字：{}", path, file.getName()));
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -78,15 +91,40 @@ public class ParatranzServiceImpl implements ParatranzService {
                 .form("filename", file.getName()) //
                 .form("path", path) //
                 .execute()) {
-            JSONObject object = JSONUtil.parseObj(response.body());
-            if (Arrays.asList("empty", "hashMatched").contains(object.getByPath("status", String.class))) {
+            String body = response.body();
+            if (!JSONUtil.isTypeJSON(body)) {
+                if ("Too many requests, please try again later.".equalsIgnoreCase(body)) {
+                    TimeUnit.SECONDS.sleep(5);
+                    updateFile(projectId, authorization, file, path, fileId);
+                } else {
+                    System.out.println(file + "：：" + body);
+                }
+                return;
+            }
+            JSONObject object = JSONUtil.parseObj(body);
+            if (Objects.equals("empty", object.getByPath("status", String.class))) {
+                deleteFile(projectId, authorization, fileId);
+                return;
+            }
+            if (Objects.equals("hashMatched", object.getByPath("status", String.class))) {
                 return;
             }
             FileVO fileVO = object.getByPath("file", FileVO.class);
             if (fileVO == null) {
-                System.out.println(response.body());
+                System.out.println(body);
                 System.out.println(StrUtil.format("文件更新失败！路径：{}，名字：{}", path, file.getName()));
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteFile(Integer projectId, String authorization, Long fileId) {
+        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/files/{}", projectId, fileId);
+        try (HttpResponse ignored = HttpRequest.delete(url) //
+                .auth(authorization) //
+                .execute()) {
         }
     }
 
@@ -149,24 +187,24 @@ public class ParatranzServiceImpl implements ParatranzService {
                 .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList())) //
                 .forEach((key, value) -> {
                     switch (key) {
-//                        case "common/characters" -> compareStrings(value, authorization, Character.class, CharacterService.class);
-//                        case "common/decisions", "common/decisions/categories" -> compareStrings(value, authorization, Decision.class, DecisionService.class);
-//                        case "common/ideas" -> compareStrings(value, authorization, Idea.class, IdeaService.class);
-//                        case "common/intelligence_agencies" -> compareStrings(value, authorization, IntelligenceAgency.class, IntelligenceAgencyService.class);
-//                        case "common/names" -> compareStrings(value, authorization, Name.class, NameService.class);
-//                        case "common/national_focus" -> compareStrings(value, authorization, NationalFocus.class, NationalFocusService.class);
-//                        case "common/on_actions" -> compareStrings(value, authorization, Action.class, ActionService.class);
-//                        case "common/operations" -> compareStrings(value, authorization, Operation.class, OperationService.class);
-//                        case "common/scripted_effects" -> compareStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
-//                        case "common/scripted_triggers" -> compareStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
-//                        case "common/units/codenames_operatives" -> compareStrings(value, authorization, Codename.class, CodenameService.class);
+                        case "common/characters" -> compareStrings(value, authorization, Character.class, CharacterService.class);
+                        case "common/decisions", "common/decisions/categories" -> compareStrings(value, authorization, Decision.class, DecisionService.class);
+                        case "common/ideas" -> compareStrings(value, authorization, Idea.class, IdeaService.class);
+                        case "common/intelligence_agencies" -> compareStrings(value, authorization, IntelligenceAgency.class, IntelligenceAgencyService.class);
+                        case "common/names" -> compareStrings(value, authorization, Name.class, NameService.class);
+                        case "common/national_focus" -> compareStrings(value, authorization, NationalFocus.class, NationalFocusService.class);
+                        case "common/on_actions" -> compareStrings(value, authorization, Action.class, ActionService.class);
+                        case "common/operations" -> compareStrings(value, authorization, Operation.class, OperationService.class);
+                        case "common/scripted_effects" -> compareStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
+                        case "common/scripted_triggers" -> compareStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
+                        case "common/units/codenames_operatives" -> compareStrings(value, authorization, Codename.class, CodenameService.class);
                         case "common/units/names" -> compareStrings(value, authorization, UnitsName.class, UnitsNameService.class);
-//                        case "common/units/names_division", "common/units/names_divisions" -> compareStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
-//                        case "common/units/names_railway_guns" -> compareStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
-//                        case "common/units/names_ships" -> compareStrings(value, authorization, NamesShip.class, NamesShipService.class);
-//                        case "events" -> compareStrings(value, authorization, Event.class, EventService.class);
-//                        case "history/countries" -> compareStrings(value, authorization, HistoryCountry.class, HistoryCountryService.class);
-//                        case "history/units" -> compareStrings(value, authorization, HistoryUnit.class, HistoryUnitService.class);
+                        case "common/units/names_division", "common/units/names_divisions" -> compareStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
+                        case "common/units/names_railway_guns" -> compareStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
+                        case "common/units/names_ships" -> compareStrings(value, authorization, NamesShip.class, NamesShipService.class);
+                        case "events" -> compareStrings(value, authorization, Event.class, EventService.class);
+                        case "history/countries" -> compareStrings(value, authorization, HistoryCountry.class, HistoryCountryService.class);
+                        case "history/units" -> compareStrings(value, authorization, HistoryUnit.class, HistoryUnitService.class);
                     }
                 });
     }
@@ -232,7 +270,8 @@ public class ParatranzServiceImpl implements ParatranzService {
             for (int pageNum = 1; pageNum <= pageCount; pageNum++) {
                 String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?file={}&stage=0&stage=1&stage=2&stage=3&stage=5&stage=9&page={}&pageSize=800", file.getProject(), file.getId(), pageNum);
                 try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
-                    JSONUtil.toBean(response.body(), PageVO.class) //
+                    String body = response.body();
+                    JSONUtil.toBean(body, PageVO.class) //
                             .getResults() //
                             .forEach(result -> {
                                 result.setOriginal(StrUtil.trim(result.getOriginal()));
@@ -274,6 +313,11 @@ public class ParatranzServiceImpl implements ParatranzService {
                                     }
                                 }
                             });
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
         });

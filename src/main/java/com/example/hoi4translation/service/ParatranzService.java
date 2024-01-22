@@ -52,6 +52,15 @@ public interface ParatranzService {
     void updateFile(Integer projectId, String authorization, File file, String path, Long fileId);
 
     /**
+     * 删除文件
+     *
+     * @param projectId     项目ID
+     * @param authorization 令牌
+     * @param fileId        文件ID
+     */
+    void deleteFile(Integer projectId, String authorization, Long fileId);
+
+    /**
      * 根据项目ID和令牌查询项目所有词条
      *
      * @param projectId     项目ID
