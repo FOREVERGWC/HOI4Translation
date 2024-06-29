@@ -36,9 +36,14 @@ public class ParatranzServiceImpl implements ParatranzService {
         try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
             String body = response.body();
             if (!JSONUtil.isTypeJSON(body)) {
-                int time = Integer.parseInt(response.header("Retry-After"));
-                TimeUnit.SECONDS.sleep(time);
-                return getFilesByProjectIdAndAuthorization(projectId, authorization);
+                if (Objects.equals(response.getStatus(), 429)) {
+                    int time = Integer.parseInt(response.header("Retry-After"));
+                    TimeUnit.SECONDS.sleep(time);
+                    return getFilesByProjectIdAndAuthorization(projectId, authorization);
+                }
+                log.error("错误请求头：{}", response.headers());
+                log.error("错误状态码：{}", response.getStatus());
+                log.error("错误状态：{}", response.isOk());
             }
             return JSONUtil.toList(body, FileVO.class);
         } catch (InterruptedException e) {
@@ -67,11 +72,15 @@ public class ParatranzServiceImpl implements ParatranzService {
                 .execute()) {
             String body = response.body();
             if (!JSONUtil.isTypeJSON(body)) {
-                if ("Too many requests, please try again later.".equalsIgnoreCase(body)) {
-                    TimeUnit.SECONDS.sleep(5);
+                if (Objects.equals(response.getStatus(), 429)) {
+                    int time = Integer.parseInt(response.header("Retry-After"));
+                    TimeUnit.SECONDS.sleep(time);
                     uploadFile(projectId, authorization, file, path);
                 } else {
-                    System.out.println(file + "：：" + body);
+                    log.error("错误请求头：{}", response.headers());
+                    log.error("错误状态码：{}", response.getStatus());
+                    log.error("错误状态：{}", response.isOk());
+                    log.error("响应信息：{}::{}", file, response.body());
                 }
                 return;
             }
@@ -280,10 +289,15 @@ public class ParatranzServiceImpl implements ParatranzService {
                 try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
                     String body = response.body();
                     if (!JSONUtil.isTypeJSON(body)) {
-                        pageNum--;
-                        int time = Integer.parseInt(response.header("Retry-After"));
-                        TimeUnit.SECONDS.sleep(time);
-                        continue;
+                        if (Objects.equals(response.getStatus(), 429)) {
+                            pageNum--;
+                            int time = Integer.parseInt(response.header("Retry-After"));
+                            TimeUnit.SECONDS.sleep(time);
+                            continue;
+                        }
+                        log.error("错误请求头：{}", response.headers());
+                        log.error("错误状态码：{}", response.getStatus());
+                        log.error("错误状态：{}", response.isOk());
                     }
                     JSONUtil.toBean(body, PageVO.class) //
                             .getResults() //
@@ -394,7 +408,21 @@ public class ParatranzServiceImpl implements ParatranzService {
         String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings/{}", projectId, stringId);
         try (HttpResponse response = HttpRequest.put(url).auth(authorization).contentType(ContentType.JSON.getValue()).body(JSONUtil.toJsonStr(map, jsonConfig)).execute()) {
             String body = response.body();
+            if (!JSONUtil.isTypeJSON(body)) {
+                if (Objects.equals(response.getStatus(), 429)) {
+                    int time = Integer.parseInt(response.header("Retry-After"));
+                    TimeUnit.SECONDS.sleep(time);
+                    updateString(projectId, stringId, authorization, map);
+                } else {
+                    log.error("错误请求头：{}", response.headers());
+                    log.error("错误状态码：{}", response.getStatus());
+                    log.error("错误状态：{}", response.isOk());
+                }
+                return;
+            }
             log.info("已更新词条：{}", body);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

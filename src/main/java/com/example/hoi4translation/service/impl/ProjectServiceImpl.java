@@ -4,7 +4,6 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.hoi4translation.service.FileService;
 import com.example.hoi4translation.service.ProjectService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +11,6 @@ import java.io.FileFilter;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class ProjectServiceImpl implements ProjectService {
     @Autowired
@@ -20,10 +18,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void importProject(String path, FileFilter filter) {
-        long startTime = System.currentTimeMillis();
-
-        FileUtil.loopFiles(path, filter).stream()
-                .collect(Collectors.groupingBy(file -> StrUtil.removeSuffix(StrUtil.removePrefix(file.getAbsolutePath(), path), file.getName()), TreeMap::new, Collectors.toList()))
+        FileUtil.loopFiles(path, filter).stream() //
+                .collect(Collectors.groupingBy(file -> StrUtil.removeSuffix(StrUtil.removePrefix(file.getAbsolutePath(), path), file.getName()), TreeMap::new, Collectors.toList())) //
                 .forEach((directory, fileList) -> {
                     directory = FileUtil.getAbsolutePath(directory);
                     switch (directory) {
@@ -47,17 +43,12 @@ public class ProjectServiceImpl implements ProjectService {
                         case "/history/units/" -> fileService.importHistoryUnits(fileList, directory);
                     }
                 });
-
-        long endTime = System.currentTimeMillis();
-        log.info("导入项目运行时间：{}ms", endTime - startTime);
     }
 
     @Override
     public void exportProject(String path, FileFilter filter) {
-        long startTime = System.currentTimeMillis();
-
-        FileUtil.loopFiles(path, filter).stream()
-                .collect(Collectors.groupingBy(file -> StrUtil.removeSuffix(StrUtil.removePrefix(file.getAbsolutePath(), path), file.getName()), TreeMap::new, Collectors.toList()))
+        FileUtil.loopFiles(path, filter).stream() //
+                .collect(Collectors.groupingBy(file -> StrUtil.removeSuffix(StrUtil.removePrefix(file.getAbsolutePath(), path), file.getName()), TreeMap::new, Collectors.toList())) //
                 .forEach((directory, fileList) -> {
                     directory = FileUtil.getAbsolutePath(directory);
                     switch (directory) {
@@ -81,8 +72,5 @@ public class ProjectServiceImpl implements ProjectService {
                         case "/history/units/" -> fileService.exportHistoryUnits(fileList, directory);
                     }
                 });
-
-        long endTime = System.currentTimeMillis();
-        log.info("导出项目运行时间：{}ms", endTime - startTime);
     }
 }
