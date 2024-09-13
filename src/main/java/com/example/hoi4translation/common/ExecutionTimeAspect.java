@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class ExecutionTimeAspect {
-    @Around("execution(public * com.example.hoi4translation.service.impl.*.*(..))")
+    @Around("execution(public * com.example.hoi4translation.service.impl.ParatranzServiceImpl.*(..))")
     public Object measureExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();

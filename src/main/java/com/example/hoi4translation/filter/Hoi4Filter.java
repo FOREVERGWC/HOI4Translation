@@ -5,13 +5,11 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class Hoi4Filter implements FileFilter {
-    private static final List<String> files = new ArrayList<>();
+    private static final Set<String> files = new HashSet<>();
 
     static {
         String[] filePaths = {
@@ -34,8 +32,7 @@ public class Hoi4Filter implements FileFilter {
                 "history/countries/",
                 "history/units/"
         };
-
-        files.addAll(Arrays.asList(filePaths));
+        Collections.addAll(files, filePaths);
     }
 
     @Override

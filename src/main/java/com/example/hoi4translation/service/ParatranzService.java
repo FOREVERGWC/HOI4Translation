@@ -79,8 +79,6 @@ public interface ParatranzService {
      */
     List<StringVO> getStringsByProjectIdAndOriginalAndAndAuthorization(Integer projectId, String original, String authorization);
 
-    <T extends BaseEntity, S extends IService<T>> void importStrings(List<FileVO> files, String authorization, Class<T> clazz, Class<S> sClass);
-
     /**
      * 对比平台词条
      *

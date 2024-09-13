@@ -1,5 +1,6 @@
 package com.example.hoi4translation.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.http.ContentType;
@@ -9,12 +10,16 @@ import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.hoi4translation.domain.entity.Character;
+import com.example.hoi4translation.common.enums.WordKey;
 import com.example.hoi4translation.domain.entity.*;
 import com.example.hoi4translation.domain.vo.FileVO;
 import com.example.hoi4translation.domain.vo.PageVO;
 import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.service.*;
+import com.example.hoi4translation.strategy.FileProcessorContext;
+import com.example.hoi4translation.strategy.KeyMatcherContext;
+import com.example.hoi4translation.strategy.ParatranzFileProcessorContext;
+import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +33,12 @@ import java.util.stream.IntStream;
 @Slf4j
 @Service
 public class ParatranzServiceImpl implements ParatranzService {
+    @Resource
+    private IWordService wordService;
+
     final int pageSize = 800;
+    private final ParatranzFileProcessorContext paratranzFileProcessorContext = new ParatranzFileProcessorContext();
+    private final KeyMatcherContext keyMatcherContext = new KeyMatcherContext();
 
     @Override
     public List<FileVO> getFilesByProjectIdAndAuthorization(Integer projectId, String authorization) {
@@ -169,115 +179,73 @@ public class ParatranzServiceImpl implements ParatranzService {
         return null;
     }
 
-    @SneakyThrows
-    private <T extends BaseEntity> T getT(Class<T> clazz, StringVO item) {
-        return clazz.getConstructor(String.class, String.class).newInstance(item.getOriginal(), item.getTranslation());
-    }
-
-    @Override
-    public <T extends BaseEntity, S extends IService<T>> void importStrings(List<FileVO> files, String authorization, Class<T> clazz, Class<S> sClass) {
-        List<T> list = files.stream() //
-                .map(file -> {
-                    int pageCount = (file.getTotal() - 1) / pageSize + 1;
-                    return IntStream.rangeClosed(1, pageCount) //
-                            .mapToObj(pageNum -> {
-                                String str = "https://paratranz.cn/api/projects/{}/strings?file={}&stage=1&stage=2&stage=3&stage=5&stage=9&page={}&pageSize=800";
-                                String url = StrUtil.format(str, file.getProject(), file.getId(), pageNum);
-                                try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
-                                    return response.body();
-                                }
-                            }) //
-                            .map(body -> JSONUtil.toBean(body, PageVO.class).getResults()) //
-                            .flatMap(List::stream) //
-                            .filter(result -> StrUtil.isNotBlank(result.getTranslation())) //
-                            .map(item -> getT(clazz, item)) //
-                            .toList();
-                }) //
-                .flatMap(List::stream) //
-                .toList();
-        SpringUtil.getBean(sClass).saveOrUpdateBatch(list);
-    }
-
     @Override
     public void compareParatranz(Integer projectId, String authorization) {
         getFilesByProjectIdAndAuthorization(projectId, authorization).stream() //
                 .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList())) //
                 .forEach((key, value) -> {
                     switch (key) {
-                        case "common/characters" -> compareStrings(value, authorization, Character.class, CharacterService.class);
-                        case "common/decisions", "common/decisions/categories" -> compareStrings(value, authorization, Decision.class, DecisionService.class);
-                        case "common/ideas" -> compareStrings(value, authorization, Idea.class, IdeaService.class);
-                        case "common/intelligence_agencies" -> compareStrings(value, authorization, IntelligenceAgency.class, IntelligenceAgencyService.class);
-                        case "common/names" -> compareStrings(value, authorization, Name.class, NameService.class);
-                        case "common/national_focus" -> compareStrings(value, authorization, NationalFocus.class, NationalFocusService.class);
-                        case "common/on_actions" -> compareStrings(value, authorization, Action.class, ActionService.class);
-                        case "common/operations" -> compareStrings(value, authorization, Operation.class, OperationService.class);
-                        case "common/scripted_effects" -> compareStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
-                        case "common/scripted_triggers" -> compareStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
-                        case "common/units/codenames_operatives" -> compareStrings(value, authorization, Codename.class, CodenameService.class);
-                        case "common/units/names" -> compareStrings(value, authorization, UnitsName.class, UnitsNameService.class);
-                        case "common/units/names_division", "common/units/names_divisions" -> compareStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
-                        case "common/units/names_railway_guns" -> compareStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
-                        case "common/units/names_ships" -> compareStrings(value, authorization, NamesShip.class, NamesShipService.class);
-                        case "events" -> compareStrings(value, authorization, Event.class, EventService.class);
-                        case "history/countries" -> compareStrings(value, authorization, HistoryCountry.class, HistoryCountryService.class);
-                        case "history/units" -> compareStrings(value, authorization, HistoryUnit.class, HistoryUnitService.class);
+//                        case "common/characters" -> compareStrings(value, authorization, Character.class, CharacterService.class);
+//                        case "common/decisions", "common/decisions/categories" -> compareStrings(value, authorization, Decision.class, DecisionService.class);
+//                        case "common/ideas" -> compareStrings(value, authorization, Idea.class, IdeaService.class);
+//                        case "common/intelligence_agencies" -> compareStrings(value, authorization, IntelligenceAgency.class, IntelligenceAgencyService.class);
+//                        case "common/names" -> compareStrings(value, authorization, Name.class, NameService.class);
+//                        case "common/national_focus" -> compareStrings(value, authorization, NationalFocus.class, NationalFocusService.class);
+//                        case "common/on_actions" -> compareStrings(value, authorization, Action.class, ActionService.class);
+//                        case "common/operations" -> compareStrings(value, authorization, Operation.class, OperationService.class);
+//                        case "common/scripted_effects" -> compareStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
+//                        case "common/scripted_triggers" -> compareStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
+//                        case "common/units/codenames_operatives" -> compareStrings(value, authorization, Codename.class, CodenameService.class);
+//                        case "common/units/names" -> compareStrings(value, authorization, UnitsName.class, UnitsNameService.class);
+//                        case "common/units/names_division", "common/units/names_divisions" -> compareStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
+//                        case "common/units/names_railway_guns" -> compareStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
+//                        case "common/units/names_ships" -> compareStrings(value, authorization, NamesShip.class, NamesShipService.class);
+//                        case "events" -> compareStrings(value, authorization, Event.class, EventService.class);
+//                        case "history/countries" -> compareStrings(value, authorization, HistoryCountry.class, HistoryCountryService.class);
+//                        case "history/units" -> compareStrings(value, authorization, HistoryUnit.class, HistoryUnitService.class);
                     }
                 });
     }
 
-//    @Override
-//    public <T extends BaseEntity, S extends IService<T>> void importStrings(List<FileVO> files, String authorization, Class<T> clazz, Class<S> sClass) {
-//        files.forEach(file -> {
-//            int pageCount = (file.getTotal() + 800 - 1) / 800;
-//            IntStream.rangeClosed(1, pageCount) //
-//                    .mapToObj(pageNum -> {
-//                        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?file={}&stage=1&stage=2&stage=3&stage=5&stage=9&page={}&pageSize=800", file.getProject(), file.getId(), pageNum);
-//                        return HttpRequest.get(url).auth(authorization).execute().body();
-//                    }) //
-//                    .map(body -> JSONUtil.toBean(body, PageVO.class).getResults()) //
-//                    .flatMap(List::stream) //
-//                    .filter(result -> {
-//                        T one = SpringUtil.getBean(sClass).getById(result.getOriginal());
-//                        return one != null && StrUtil.isBlank(one.getTranslation());
-//                    }) //
-//                    .forEach(result -> {
-//                        try {
-//                            T t = clazz.getConstructor(String.class, String.class).newInstance(result.getOriginal(), result.getTranslation());
-//                            SpringUtil.getBean(sClass).saveOrUpdate(t);
-//                        } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    });
-//        });
-//    }
-
     @Override
     public void importParatranz(Integer projectId, String authorization) {
+        List<StringVO> list = new ArrayList<>();
+        Set<Word> words = new TreeSet<>(Comparator.comparing(Word::getKey).thenComparing(Word::getOriginal));
+
         getFilesByProjectIdAndAuthorization(projectId, authorization).stream() //
                 .collect(Collectors.groupingBy(FileVO::getFolder, TreeMap::new, Collectors.toList())) //
                 .forEach((key, value) -> {
-                    switch (key) {
-                        case "common/characters" -> importStrings(value, authorization, Character.class, CharacterService.class);
-//                        case "common/decisions", "common/decisions/categories" -> importStrings(value, authorization, Decision.class, DecisionService.class);
-//                        case "common/ideas" -> importStrings(value, authorization, Idea.class, IdeaService.class);
-//                        case "common/intelligence_agencies" -> importStrings(value, authorization, IntelligenceAgency.class, IntelligenceAgencyService.class);
-//                        case "common/names" -> importStrings(value, authorization, Name.class, NameService.class);
-//                        case "common/national_focus" -> importStrings(value, authorization, NationalFocus.class, NationalFocusService.class);
-//                        case "common/on_actions" -> importStrings(value, authorization, Action.class, ActionService.class);
-//                        case "common/operations" -> importStrings(value, authorization, Operation.class, OperationService.class);
-//                        case "common/scripted_effects" -> importStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
-//                        case "common/scripted_triggers" -> importStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
-//                        case "common/units/codenames_operatives" -> importStrings(value, authorization, Codename.class, CodenameService.class);
-//                        case "common/units/names/" -> importStrings(value, authorization, UnitsName.class, UnitsNameService.class);
-//                        case "common/units/names_division", "common/units/names_divisions" -> importStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
-//                        case "common/units/names_railway_guns" -> importStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
-//                        case "common/units/names_ships" -> importStrings(value, authorization, NamesShip.class, NamesShipService.class);
-//                        case "events" -> importStrings(value, authorization, Event.class, EventService.class);
-//                        case "history/countries" -> importStrings(value, authorization, HistoryCountry.class, HistoryCountryService.class);
-//                        case "history/units" -> importStrings(value, authorization, HistoryUnit.class, HistoryUnitService.class);
-                    }
+                    paratranzFileProcessorContext.processFiles(authorization, key, value, list, words);
                 });
+
+        for (StringVO vo : list) {
+            String key = vo.getKey();
+            String original = vo.getOriginal().trim();
+            String translation = vo.getTranslation().trim();
+            WordKey wordKey = keyMatcherContext.determineWordKey(key);
+            words.add(Word.builder().original(original).key(wordKey).translation(translation).stage(1).build());
+        }
+
+        List<Word> wordList = new ArrayList<>();
+        for (Word word : words) {
+            Word one = wordService.lambdaQuery()
+                    .eq(Word::getOriginal, word.getOriginal())
+                    .eq(Word::getKey, word.getKey())
+                    .one();
+            if (one != null) {
+                if (Objects.equals(one.getStage(), word.getStage()) && Objects.equals(one.getTranslation(), word.getTranslation())) {
+                    continue;
+                }
+                one.setTranslation(word.getTranslation().trim());
+                one.setStage(1);
+                wordList.add(one);
+            } else {
+                wordList.add(word);
+            }
+        }
+        if (CollectionUtil.isNotEmpty(wordList)) {
+            wordService.saveOrUpdateBatchByMultiId(wordList);
+        }
     }
 
     @Override
@@ -443,7 +411,7 @@ public class ParatranzServiceImpl implements ParatranzService {
 //                        case "common/scripted_effects" -> exportStrings(value, authorization, ScriptedEffect.class, ScriptedEffectService.class);
 //                        case "common/scripted_triggers" -> exportStrings(value, authorization, ScriptedTrigger.class, ScriptedTriggerService.class);
 //                        case "common/units/codenames_operatives" -> exportStrings(value, authorization, Codename.class, CodenameService.class);
-                        case "common/units/names" -> exportStrings(value, authorization, UnitsName.class, UnitsNameService.class);
+//                        case "common/units/names" -> exportStrings(value, authorization, UnitsName.class, UnitsNameService.class);
 //                        case "common/units/names_division", "common/units/names_divisions" -> exportStrings(value, authorization, NamesDivision.class, NamesDivisionService.class);
 //                        case "common/units/names_railway_guns" -> exportStrings(value, authorization, RailwayGun.class, RailwayGunService.class);
 //                        case "common/units/names_ships" -> exportStrings(value, authorization, NamesShip.class, NamesShipService.class);

@@ -8,15 +8,10 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.hoi4translation.domain.entity.HistoryUnit;
-import com.example.hoi4translation.domain.entity.NamesShip;
 import com.example.hoi4translation.domain.vo.PageVO;
-import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.domain.vo.SuggestionVO;
 import com.example.hoi4translation.filter.Hoi4Filter;
 import com.example.hoi4translation.service.*;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,24 +37,6 @@ class Hoi4ApplicationTests {
     private Hoi4Filter hoi4Filter;
     @Autowired
     private ParatranzService paratranzService;
-    @Autowired
-    private CharacterService characterService;
-    @Autowired
-    private NamesShipService namesShipService;
-    @Autowired
-    private ActionService actionService;
-    @Autowired
-    private ScriptedEffectService scriptedEffectService;
-    @Autowired
-    private ScriptedTriggerService scriptedTriggerService;
-    @Autowired
-    private NamesDivisionService namesDivisionService;
-    @Autowired
-    private EventService eventService;
-    @Autowired
-    private HistoryCountryService historyCountryService;
-    @Autowired
-    private HistoryUnitService historyUnitService;
 
     @Test
     @DisplayName("复制原版文件")
@@ -68,13 +44,6 @@ class Hoi4ApplicationTests {
         String resource = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Hearts of Iron IV";
         String destination = "C:\\Users\\FOREVERGWC\\Desktop\\资料\\游戏\\钢铁雄心4\\Mod\\汉化参考\\原版汉化";
         fileService.fileCopy(resource, destination, hoi4Filter);
-    }
-
-    @Test
-    @DisplayName("导入原版词条")
-    void t2() {
-        String file = "C:\\Users\\FOREVERGWC\\Desktop\\资料\\游戏\\钢铁雄心4\\Mod\\汉化参考\\原版汉化";
-        projectService.importProject(file, hoi4Filter);
     }
 
     @Test
@@ -118,56 +87,6 @@ class Hoi4ApplicationTests {
     @DisplayName("导出词条到平台")
     void t6() {
         paratranzService.exportParatranz(projectId, authorization);
-    }
-
-    @Test
-    @DisplayName("从平台查询相同词条")
-    void t7() {
-        LambdaQueryWrapper<NamesShip> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(NamesShip::getTranslation, "");
-        List<NamesShip> list = namesShipService.list(wrapper);
-        list.forEach(item -> {
-            List<StringVO> strings = paratranzService.getStringsByProjectIdAndOriginalAndAndAuthorization(96, item.getOriginal(), "d61cac8fc2aaf5dc4a4d84b7cfe223c6");
-            strings.forEach(stringVO -> {
-                System.out.println("原文：" + stringVO.getOriginal() + "，译文：" + stringVO.getTranslation());
-                item.setTranslation(stringVO.getTranslation());
-//                namesShipService.updateById(item);
-            });
-        });
-    }
-
-    @SneakyThrows
-    @Test
-    @DisplayName("从hoi4库查询相同词条")
-    void t8() {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/hoi4?serverTimezone=UTC", "root", "root");
-        LambdaQueryWrapper<HistoryUnit> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(HistoryUnit::getTranslation, "");
-        List<HistoryUnit> list = historyUnitService.list(wrapper);
-        list.forEach(item -> {
-            try {
-                PreparedStatement ps = conn.prepareStatement("select * from `history/units` where original = ?;");
-                ps.setString(1, item.getOriginal());
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    if (!Objects.equals(item.getTranslation(), rs.getString(3))) {
-                        if (StrUtil.isNotBlank(rs.getString(3))) {
-//                            item.setTranslation(rs.getString(3));
-                            System.out.println(item + "，hoi4库翻译：" + rs.getString(3));
-                        }
-//                        List<StringVO> strings = paratranzService.getStringsByProjectIdAndOriginalAndAndAuthorization(96, item.getOriginal(), "d61cac8fc2aaf5dc4a4d84b7cfe223c6");
-//                        if (CollectionUtil.isNotEmpty(strings) && Objects.equals(strings.get(0).getTranslation(), rs.getString(3))) {
-//                            item.setTranslation(rs.getString(3));
-//                            System.out.println(item + "，hoi4库翻译：" + rs.getString(3));
-//                        }
-                    }
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        historyUnitService.updateBatchById(list);
     }
 
     @Test

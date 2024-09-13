@@ -33,30 +33,11 @@ class Hoi4TheRoadTo56ApplicationTests {
     private final Integer projectId = 5762;
     private final String authorization = "d61cac8fc2aaf5dc4a4d84b7cfe223c6";
     @Autowired
-    private FileService fileService;
-    @Autowired
     private ProjectService projectService;
     @Autowired
     private Hoi4Filter hoi4Filter;
     @Autowired
     private ParatranzService paratranzService;
-
-    @Test
-    @DisplayName("复制56之路文件")
-    void t1() {
-        String resource1 = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Hearts of Iron IV";
-        String resource2 = "C:\\Program Files (x86)\\Steam\\steamapps\\workshop\\content\\394360\\820260968";
-        String destination = "C:\\Users\\FOREVERGWC\\Desktop\\资料\\游戏\\钢铁雄心4\\Mod\\汉化参考\\56之路原版";
-        fileService.fileCopy(resource1, destination, hoi4Filter);
-        fileService.fileCopy(resource2, destination, hoi4Filter);
-    }
-
-    @Test
-    @DisplayName("导入56之路词条")
-    void t2() {
-        String file = "C:\\Users\\FOREVERGWC\\Desktop\\资料\\游戏\\钢铁雄心4\\Mod\\汉化参考\\56之路原版";
-        projectService.importProject(file, hoi4Filter);
-    }
 
     @Test
     @DisplayName("导出56之路词条")
