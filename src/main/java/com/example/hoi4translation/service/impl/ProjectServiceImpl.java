@@ -9,6 +9,7 @@ import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.service.FileService;
 import com.example.hoi4translation.service.IWordService;
 import com.example.hoi4translation.service.ProjectService;
+import com.example.hoi4translation.strategy.ExportFileFileProcessorContext;
 import com.example.hoi4translation.strategy.FileProcessorContext;
 import com.example.hoi4translation.strategy.KeyMatcherContext;
 import jakarta.annotation.Resource;
@@ -32,6 +33,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final FileProcessorContext fileProcessorContext = new FileProcessorContext();
     private final KeyMatcherContext keyMatcherContext = new KeyMatcherContext();
+    private final ExportFileFileProcessorContext exportFileFileProcessorContext = new ExportFileFileProcessorContext();
 
     @Override
     public void importProject(String vanilla, String mod, String destination, FileFilter filter) {
@@ -81,37 +83,27 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void exportProject(String path, FileFilter filter) {
-        FileUtil.loopFiles(path, filter).stream() //
-                .collect(Collectors.groupingBy(file -> StrUtil.removeSuffix(StrUtil.removePrefix(file.getAbsolutePath(), path), file.getName()), TreeMap::new, Collectors.toList())) //
-                .forEach((directory, fileList) -> {
-                    directory = FileUtil.getAbsolutePath(directory);
-                    switch (directory) {
-                        case "/common/characters/" -> fileService.exportCharacters(fileList, directory);
-                        case "/common/decisions/", "/common/decisions/categories/" ->
-                                fileService.exportDecisions(fileList, directory);
-                        case "/common/ideas/" -> fileService.exportIdeas(fileList, directory);
-                        case "/common/intelligence_agencies/" -> fileService.exportAgencies(fileList, directory);
-                        case "/common/names/" -> fileService.exportNames(fileList, directory);
-                        case "/common/national_focus/" -> fileService.exportFocuses(fileList, directory);
-                        case "/common/on_actions/" -> fileService.exportActions(fileList, directory);
-                        case "/common/operations/" -> fileService.exportOperations(fileList, directory);
-                        case "/common/scripted_effects/" -> fileService.exportEffects(fileList, directory);
-                        case "/common/scripted_triggers/" -> fileService.exportTriggers(fileList, directory);
-                        case "/common/units/codenames_operatives/" -> fileService.exportCodeNames(fileList, directory);
-                        case "/common/units/names/" -> fileService.exportUnitNames(fileList, directory);
-                        case "/common/units/names_division/", "/common/units/names_divisions/" ->
-                                fileService.exportDivisions(fileList, directory);
-                        case "/common/units/names_railway_guns/" -> fileService.exportRailwayGuns(fileList, directory);
-                        case "/common/units/names_ships/" -> fileService.exportShips(fileList, directory);
-                        case "/events/" -> fileService.exportEvents(fileList, directory);
-                        case "/history/countries/" -> fileService.exportHistoryCountries(fileList, directory);
-                        case "/history/units/" -> fileService.exportHistoryUnits(fileList, directory);
-                    }
-                });
+    public void exportProject(String vanilla, String mod, String destination, FileFilter filter) {
+        // 清空目录
+        FileUtil.clean(destination);
+        // 复制文件
+        long start = System.currentTimeMillis();
+        fileService.fileCopy(vanilla, destination, filter);
+        fileService.fileCopy(mod, destination, filter);
+        long end = System.currentTimeMillis();
+        log.info("【复制文件】耗时：{}秒", (end - start) * 1.0 / 1000);
+        // 写入文件
+        start = System.currentTimeMillis();
+        FileUtil.loopFiles(destination, filter)
+                .parallelStream()
+                .collect(Collectors.groupingBy(file -> getRelativeDirectory(file.getAbsolutePath(), destination), ConcurrentHashMap::new, Collectors.toList()))
+                .forEach(exportFileFileProcessorContext::processFiles);
+        end = System.currentTimeMillis();
+        log.info("【写入文件】耗时：{}秒", (end - start) * 1.0 / 1000);
     }
 
     private String getRelativeDirectory(String filePath, String basePath) {
+        // TODO 路径考虑Linux适配
         String relativePath = StrUtil.removePrefix(filePath, basePath);
         String withoutFileName = StrUtil.removeSuffix(relativePath, FileUtil.getName(filePath));
         return StrUtil.replace(withoutFileName, StrPool.BACKSLASH, StrPool.SLASH);

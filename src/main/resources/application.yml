@@ -47,3 +47,10 @@ spring:
     url: jdbc:mysql://localhost:3306/钢铁雄心4?serverTimezone=UTC
     username: root
     password: root
+
+path:
+  # TODO 路径考虑Linux适配
+  vanilla: C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV
+  workshop_56: C:\Program Files (x86)\Steam\steamapps\workshop\content\394360\820260968
+  original_56: C:\Users\91658\Desktop\Games\56之路原版
+  authorization: d61cac8fc2aaf5dc4a4d84b7cfe223c6

@@ -9,6 +9,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
@@ -26,21 +27,25 @@ class Hoi4TranslationApplicationTests {
     @Resource
     private ProjectService projectService;
 
-    private final String vanilla = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Hearts of Iron IV";
-    private final String workshop_56 = "C:\\Program Files (x86)\\Steam\\steamapps\\workshop\\content\\394360\\820260968";
-    private final String original_56 = "C:\\Users\\91658\\Desktop\\Games\\56之路原版";
+    @Value("${path.vanilla}")
+    private String vanilla;
+    @Value("${path.workshop_56}")
+    private String workshop_56;
+    @Value("${path.original_56}")
+    private String original_56;
     private final Integer projectId = 5762;
-    private final String authorization = "d61cac8fc2aaf5dc4a4d84b7cfe223c6";
+    @Value("${path.authorization}")
+    private String authorization;
 
     @Test
-    @DisplayName("导入56词条")
-    void contextLoads() {
+    @DisplayName("导入【56之路】词条")
+    void t1() {
         projectService.importProject(vanilla, workshop_56, original_56, hoi4Filter);
     }
 
     @Test
-    @DisplayName("上传56文件")
-    void upload() {
+    @DisplayName("上传【56之路】文件")
+    void t2() {
         // 清空目录
         FileUtil.clean(original_56);
         // 复制文件
@@ -67,7 +72,19 @@ class Hoi4TranslationApplicationTests {
 
     @Test
     @DisplayName("从平台导入词条")
-    void t5() {
+    void t3() {
         paratranzService.importParatranz(projectId, authorization);
+    }
+
+    @Test
+    @DisplayName("导出【56之路】词条")
+    void t4() {
+        projectService.exportProject(vanilla, workshop_56, original_56, hoi4Filter);
+    }
+
+    @Test
+    @DisplayName("复制【56之路】到本地模组")
+    void t5() {
+        // TODO 写入到本地模组、添加md信息
     }
 }

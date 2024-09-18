@@ -32,8 +32,6 @@ class Hoi4ApplicationTests {
     @Autowired
     private FileService fileService;
     @Autowired
-    private ProjectService projectService;
-    @Autowired
     private Hoi4Filter hoi4Filter;
     @Autowired
     private ParatranzService paratranzService;
@@ -44,13 +42,6 @@ class Hoi4ApplicationTests {
         String resource = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Hearts of Iron IV";
         String destination = "C:\\Users\\FOREVERGWC\\Desktop\\资料\\游戏\\钢铁雄心4\\Mod\\汉化参考\\原版汉化";
         fileService.fileCopy(resource, destination, hoi4Filter);
-    }
-
-    @Test
-    @DisplayName("导出原版词条")
-    void t3() {
-        String file = "C:\\Users\\FOREVERGWC\\Desktop\\资料\\游戏\\钢铁雄心4\\Mod\\汉化参考\\原版汉化";
-        projectService.exportProject(file, hoi4Filter);
     }
 
     @Test
