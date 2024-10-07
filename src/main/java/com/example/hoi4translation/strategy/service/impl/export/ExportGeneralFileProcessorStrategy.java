@@ -81,7 +81,7 @@ public class ExportGeneralFileProcessorStrategy implements ExportFileProcessorSt
             String key = StrUtil.removeSuffix(StrUtil.removePrefix(String.valueOf(object), "\""), "\"").trim();
             if (Arrays.stream(targetKey).anyMatch(target -> StrUtil.equals(path, target)) || currentPath.contains("|ordered|")) {
                 // TODO 反射获取bean查询优化为注入
-                WordKey wordKey = keyMatcherContext.determineWordKey(currentPath);
+                WordKey wordKey = keyMatcherContext.determineWordKey(currentPath + "|" + key);
                 Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(key).key(wordKey).build());
                 if (word == null || !Objects.equals(word.getStage(), 1)) {
                     continue;

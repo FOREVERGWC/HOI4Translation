@@ -51,6 +51,9 @@ spring:
 path:
   # TODO 路径考虑Linux适配
   vanilla: C:\Program Files (x86)\Steam\steamapps\common\Hearts of Iron IV
+  original_vanilla: C:\Users\91658\Desktop\Games\原版汉化
+  local_vanilla: C:\Users\91658\Documents\Paradox Interactive\Hearts of Iron IV\mod\Vanilla_CN_Supply
   workshop_56: C:\Program Files (x86)\Steam\steamapps\workshop\content\394360\820260968
   original_56: C:\Users\91658\Desktop\Games\56之路原版
+  local_56: C:\Users\91658\Documents\Paradox Interactive\Hearts of Iron IV\mod\56_CN_Supply
   authorization: d61cac8fc2aaf5dc4a4d84b7cfe223c6

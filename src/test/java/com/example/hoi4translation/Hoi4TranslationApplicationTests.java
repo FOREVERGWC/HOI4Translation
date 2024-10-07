@@ -33,6 +33,8 @@ class Hoi4TranslationApplicationTests {
     private String workshop_56;
     @Value("${path.original_56}")
     private String original_56;
+    @Value("${path.local_56}")
+    private String local_56;
     private final Integer projectId = 5762;
     @Value("${path.authorization}")
     private String authorization;
@@ -85,6 +87,11 @@ class Hoi4TranslationApplicationTests {
     @Test
     @DisplayName("复制【56之路】到本地模组")
     void t5() {
-        // TODO 写入到本地模组、添加md信息
+        // 清空目录
+        FileUtil.clean(local_56 + "\\common");
+        FileUtil.clean(local_56 + "\\events");
+        FileUtil.clean(local_56 + "\\history");
+        fileService.fileCopy(original_56, local_56, hoi4Filter);
+        // TODO 添加md信息
     }
 }

@@ -183,6 +183,7 @@ public class ParadoxParserUtil {
 
         String[] strings = string.split("\n");
         strings = ArrayUtil.sub(strings, 1, strings.length - 1);
+        // TODO 转义:，解决字符串包含:时的错误
         string = Arrays.stream(strings)
                 .map(line -> ReUtil.delPre("^\\s{4}", line))
                 .map(line -> line.replaceAll(",$", "")) // 去除行末逗号

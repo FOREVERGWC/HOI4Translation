@@ -45,7 +45,9 @@ public class ProjectServiceImpl implements ProjectService {
         // 复制文件
         long start = System.currentTimeMillis();
         fileService.fileCopy(vanilla, destination, filter);
-        fileService.fileCopy(mod, destination, filter);
+        if (mod != null) {
+            fileService.fileCopy(mod, destination, filter);
+        }
         long end = System.currentTimeMillis();
         log.info("【复制文件】耗时：{}秒", (end - start) * 1.0 / 1000);
         // TODO 清空空词条文件
@@ -89,7 +91,9 @@ public class ProjectServiceImpl implements ProjectService {
         // 复制文件
         long start = System.currentTimeMillis();
         fileService.fileCopy(vanilla, destination, filter);
-        fileService.fileCopy(mod, destination, filter);
+        if (mod != null) {
+            fileService.fileCopy(mod, destination, filter);
+        }
         long end = System.currentTimeMillis();
         log.info("【复制文件】耗时：{}秒", (end - start) * 1.0 / 1000);
         // 写入文件
