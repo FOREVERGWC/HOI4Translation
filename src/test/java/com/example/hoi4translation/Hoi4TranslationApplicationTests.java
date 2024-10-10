@@ -1,10 +1,18 @@
 package com.example.hoi4translation;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
+import com.example.hoi4translation.common.enums.WordKey;
+import com.example.hoi4translation.domain.entity.Word;
+import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.filter.Hoi4Filter;
 import com.example.hoi4translation.service.FileService;
+import com.example.hoi4translation.service.IWordService;
 import com.example.hoi4translation.service.ParatranzService;
 import com.example.hoi4translation.service.ProjectService;
+import com.example.hoi4translation.strategy.KeyMatcherContext;
+import com.example.hoi4translation.strategy.ParatranzFileProcessorContext;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +34,8 @@ class Hoi4TranslationApplicationTests {
     private ParatranzService paratranzService;
     @Resource
     private ProjectService projectService;
+    @Resource
+    private IWordService wordService;
 
     @Value("${path.vanilla}")
     private String vanilla;
@@ -38,6 +48,9 @@ class Hoi4TranslationApplicationTests {
     private final Integer projectId = 5762;
     @Value("${path.authorization}")
     private String authorization;
+
+    private final ParatranzFileProcessorContext paratranzFileProcessorContext = new ParatranzFileProcessorContext();
+    private final KeyMatcherContext keyMatcherContext = new KeyMatcherContext();
 
     @Test
     @DisplayName("导入【56之路】词条")
@@ -76,6 +89,37 @@ class Hoi4TranslationApplicationTests {
     @DisplayName("从平台导入词条")
     void t3() {
         paratranzService.importParatranz(projectId, authorization);
+    }
+
+    @Test
+    @DisplayName("更新数据库未翻译词条")
+    void t5sfa() {
+        // TODO 查询数据库未翻译词条，查询平台
+        // TODO 根据词条key判断类型是否匹配，不匹配则跳过，匹配则更新数据库
+        // TODO 结束
+        List<Word> wordList = wordService.lambdaQuery()
+                .eq(Word::getTranslation, "")
+                .eq(Word::getStage, 0)
+                .list();
+        for (Word word : wordList) {
+            List<StringVO> stringList = paratranzService.getStringsByProjectIdAndOriginalAndAndAuthorization(projectId, word.getOriginal(), authorization);
+            if (CollectionUtil.isEmpty(stringList)) {
+                continue;
+            }
+            for (StringVO vo : stringList) {
+                String name = vo.getFile().getName();
+                WordKey wordKey = keyMatcherContext.determineWordKey(vo.getKey());
+                if (wordKey != word.getKey()) {
+                    continue;
+                }
+                if (StrUtil.isBlank(vo.getTranslation())) {
+                    continue;
+                }
+                System.out.println("UPDATE `钢铁雄心4`.`word` SET `translation` = '" + vo.getTranslation() + "', `stage` = 1 WHERE `original` = '" + word.getOriginal() + "' AND `key` = " + word.getKey().getCode() + ";");
+                break;
+            }
+        }
+//        paratranzService.compareParatranz(projectId, authorization);
     }
 
     @Test

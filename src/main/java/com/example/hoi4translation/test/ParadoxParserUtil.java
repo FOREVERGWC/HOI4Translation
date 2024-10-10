@@ -178,6 +178,8 @@ public class ParadoxParserUtil {
     }
 
     public static String generate(JSONObject json) {
+        // TODO 转义冒号和转义嵌套函数进行合并，减少时间复杂度
+        handleColon(json); // 转义冒号
         handleNest(json); // 递归遍历所有对象，查找isNest键，若找到则移除isNest键并将当前对象转为字符串
         String string = json.toStringPretty();
 
@@ -201,6 +203,7 @@ public class ParadoxParserUtil {
                 .replaceAll("= &lt;", "<") // 转义小于号
                 .replaceAll("%%", "[") // 转义左中括号
                 .replaceAll("!!", "]") //转义右中括号
+                .replaceAll("--", ":") // 转义冒号
         ;
 
         return string;
@@ -264,6 +267,20 @@ public class ParadoxParserUtil {
             }
         }
         return null;
+    }
+
+    private static JSONObject handleColon(JSONObject json) {
+        for (String key : json.keySet()) {
+            Object o = json.get(key);
+            if (o instanceof String value && value.contains(":")) {
+                String v = value.replaceAll(":", "--");
+                json.set(key, v);
+            }
+            if (o instanceof JSONObject object) {
+                json.set(key, handleColon(object));
+            }
+        }
+        return json;
     }
 
     private static JSONObject handleNest(JSONObject json) {

@@ -170,7 +170,7 @@ public class ParatranzServiceImpl implements ParatranzService {
 
     @Override
     public List<StringVO> getStringsByProjectIdAndOriginalAndAndAuthorization(Integer projectId, String original, String authorization) {
-        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?original%40={}", projectId, original.replaceAll(" ", "+")); //
+        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?original%40={}", projectId, original.replaceAll(" ", "+").replaceAll("'", "%27")); //
         try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
             if (response.isOk()) {
                 return JSONUtil.toBean(response.body(), PageVO.class).getResults();
