@@ -5,8 +5,8 @@ import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.FileVO;
 import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.strategy.service.ParatranzFileProcessorStrategy;
-import com.example.hoi4translation.strategy.service.impl.paratranz.ParatranzGeneralFileProcessorStrategy;
-import com.example.hoi4translation.strategy.service.impl.paratranz.ParatranzUnitFileProcessorStrategy;
+import com.example.hoi4translation.strategy.service.impl.paratranz.file.ParatranzGeneralFileProcessorStrategy;
+import com.example.hoi4translation.strategy.service.impl.paratranz.file.ParatranzUnitFileProcessorStrategy;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;

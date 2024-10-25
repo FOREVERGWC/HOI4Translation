@@ -11,8 +11,7 @@ import com.example.hoi4translation.service.FileService;
 import com.example.hoi4translation.service.IWordService;
 import com.example.hoi4translation.service.ParatranzService;
 import com.example.hoi4translation.service.ProjectService;
-import com.example.hoi4translation.strategy.KeyMatcherContext;
-import com.example.hoi4translation.strategy.ParatranzFileProcessorContext;
+import com.example.hoi4translation.strategy.ParatranzKeyMatcherProcessorContext;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -21,7 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @SpringBootTest
@@ -49,8 +49,7 @@ class Hoi4TranslationApplicationTests {
     @Value("${path.authorization}")
     private String authorization;
 
-    private final ParatranzFileProcessorContext paratranzFileProcessorContext = new ParatranzFileProcessorContext();
-    private final KeyMatcherContext keyMatcherContext = new KeyMatcherContext();
+    private final ParatranzKeyMatcherProcessorContext paratranzKeyMatcherProcessorContext = new ParatranzKeyMatcherProcessorContext();
 
     @Test
     @DisplayName("导入【56之路】词条")
@@ -94,9 +93,6 @@ class Hoi4TranslationApplicationTests {
     @Test
     @DisplayName("更新数据库未翻译词条")
     void t5sfa() {
-        // TODO 查询数据库未翻译词条，查询平台
-        // TODO 根据词条key判断类型是否匹配，不匹配则跳过，匹配则更新数据库
-        // TODO 结束
         List<Word> wordList = wordService.lambdaQuery()
                 .eq(Word::getTranslation, "")
                 .eq(Word::getStage, 0)
@@ -107,15 +103,15 @@ class Hoi4TranslationApplicationTests {
                 continue;
             }
             for (StringVO vo : stringList) {
-                String name = vo.getFile().getName();
-                WordKey wordKey = keyMatcherContext.determineWordKey(vo.getKey());
+                String fileName = vo.getFile().getName();
+                WordKey wordKey = paratranzKeyMatcherProcessorContext.determineWordKey(fileName, vo.getKey());
                 if (wordKey != word.getKey()) {
                     continue;
                 }
                 if (StrUtil.isBlank(vo.getTranslation())) {
                     continue;
                 }
-                System.out.println("UPDATE `钢铁雄心4`.`word` SET `translation` = '" + vo.getTranslation() + "', `stage` = 1 WHERE `original` = '" + word.getOriginal() + "' AND `key` = " + word.getKey().getCode() + ";");
+                System.out.println("UPDATE `钢铁雄心4`.`word` SET `translation` = '" + vo.getTranslation() + "', `stage` = 1 WHERE `original` = '" + word.getOriginal().replaceAll("'", "''") + "' AND `key` = " + word.getKey().getCode() + ";");
                 break;
             }
         }

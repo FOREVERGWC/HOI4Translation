@@ -3,27 +3,25 @@ package com.example.hoi4translation;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONConfig;
-import cn.hutool.json.JSONUtil;
-import com.example.hoi4translation.domain.vo.PageVO;
-import com.example.hoi4translation.domain.vo.SuggestionVO;
+import com.example.hoi4translation.common.enums.WordKey;
+import com.example.hoi4translation.domain.entity.Word;
+import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.filter.Hoi4Filter;
-import com.example.hoi4translation.service.*;
+import com.example.hoi4translation.service.FileService;
+import com.example.hoi4translation.service.IWordService;
+import com.example.hoi4translation.service.ParatranzService;
+import com.example.hoi4translation.service.ProjectService;
+import com.example.hoi4translation.strategy.ParatranzKeyMatcherProcessorContext;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @SpringBootTest
@@ -37,6 +35,8 @@ class Hoi4ApplicationTests {
     private ParatranzService paratranzService;
     @Resource
     private ProjectService projectService;
+    @Resource
+    private IWordService wordService;
 
     @Value("${path.vanilla}")
     private String vanilla;
@@ -47,6 +47,8 @@ class Hoi4ApplicationTests {
     private final Integer projectId = 5239;
     @Value("${path.authorization}")
     private String authorization;
+
+    private final ParatranzKeyMatcherProcessorContext paratranzKeyMatcherProcessorContext = new ParatranzKeyMatcherProcessorContext();
 
     @Test
     @DisplayName("导入【原版】词条")
@@ -84,6 +86,34 @@ class Hoi4ApplicationTests {
     @DisplayName("从平台导入词条")
     void t3() {
         paratranzService.importParatranz(projectId, authorization);
+    }
+
+    @Test
+    @DisplayName("更新数据库未翻译词条")
+    void t5sfa() {
+        List<Word> wordList = wordService.lambdaQuery()
+                .eq(Word::getTranslation, "")
+                .eq(Word::getStage, 0)
+                .list();
+        for (Word word : wordList) {
+            List<StringVO> stringList = paratranzService.getStringsByProjectIdAndOriginalAndAndAuthorization(projectId, word.getOriginal(), authorization);
+            if (CollectionUtil.isEmpty(stringList)) {
+                continue;
+            }
+            for (StringVO vo : stringList) {
+                String fileName = vo.getFile().getName();
+                WordKey wordKey = paratranzKeyMatcherProcessorContext.determineWordKey(fileName, vo.getKey());
+                if (wordKey != word.getKey()) {
+                    continue;
+                }
+                if (StrUtil.isBlank(vo.getTranslation())) {
+                    continue;
+                }
+                System.out.println("UPDATE `钢铁雄心4`.`word` SET `translation` = '" + vo.getTranslation() + "', `stage` = 1 WHERE `original` = '" + word.getOriginal().replaceAll("'", "''") + "' AND `key` = " + word.getKey().getCode() + ";");
+                break;
+            }
+        }
+//        paratranzService.compareParatranz(projectId, authorization);
     }
 
     @Test

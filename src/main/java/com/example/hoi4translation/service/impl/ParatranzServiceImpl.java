@@ -11,16 +11,16 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.hoi4translation.common.enums.WordKey;
-import com.example.hoi4translation.domain.entity.*;
+import com.example.hoi4translation.domain.entity.BaseEntity;
+import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.FileVO;
 import com.example.hoi4translation.domain.vo.PageVO;
 import com.example.hoi4translation.domain.vo.StringVO;
-import com.example.hoi4translation.service.*;
-import com.example.hoi4translation.strategy.FileProcessorContext;
+import com.example.hoi4translation.service.IWordService;
+import com.example.hoi4translation.service.ParatranzService;
 import com.example.hoi4translation.strategy.KeyMatcherContext;
 import com.example.hoi4translation.strategy.ParatranzFileProcessorContext;
 import jakarta.annotation.Resource;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -170,11 +170,16 @@ public class ParatranzServiceImpl implements ParatranzService {
 
     @Override
     public List<StringVO> getStringsByProjectIdAndOriginalAndAndAuthorization(Integer projectId, String original, String authorization) {
-        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?original%40={}", projectId, original.replaceAll(" ", "+").replaceAll("'", "%27")); //
+        String text = original.replaceAll("%", "%25")
+                .replaceAll(" ", "+")
+                .replaceAll("'", "%27");
+        String url = StrUtil.format("https://paratranz.cn/api/projects/{}/strings?original%40={}", projectId, text); //
         try (HttpResponse response = HttpRequest.get(url).auth(authorization).execute()) {
             if (response.isOk()) {
                 return JSONUtil.toBean(response.body(), PageVO.class).getResults();
             }
+        } catch (Exception e) {
+            log.error("请求错误：{}，项目：{}，原文：{}，地址：{}", e.getMessage(), projectId, original, url);
         }
         return null;
     }

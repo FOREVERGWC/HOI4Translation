@@ -1,4 +1,4 @@
-package com.example.hoi4translation.strategy.service.impl.paratranz;
+package com.example.hoi4translation.strategy.service.impl.paratranz.file;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
