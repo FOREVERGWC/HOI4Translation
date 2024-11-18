@@ -79,7 +79,7 @@ public class ProjectServiceImpl implements ProjectService {
             }
             wordList.add(word);
         }
-        wordService.saveBatch(wordList);
+        wordService.saveOrUpdateBatchByMultiId(wordList);
         end = System.currentTimeMillis();
         log.info("【写入数据库】耗时：{}秒", (end - start) * 1.0 / 1000);
     }
