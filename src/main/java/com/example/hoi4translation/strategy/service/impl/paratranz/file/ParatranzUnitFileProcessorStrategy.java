@@ -5,6 +5,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
 import com.example.hoi4translation.common.enums.WordKey;
+import com.example.hoi4translation.common.enums.WordStage;
 import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.FileVO;
 import com.example.hoi4translation.domain.vo.PageVO;
@@ -29,7 +30,7 @@ public class ParatranzUnitFileProcessorStrategy implements ParatranzFileProcesso
                 .flatMap(List::stream)
                 .toList();
         List<Word> newWords = voList.stream()
-                .map(vo -> Word.builder().original(vo.getOriginal().trim()).key(wordKey).translation(vo.getTranslation().trim()).stage(1).build())
+                .map(vo -> new Word(vo.getOriginal().trim(), wordKey, vo.getTranslation().trim(), WordStage.TRANSLATED))
                 .toList();
         words.addAll(newWords);
     }

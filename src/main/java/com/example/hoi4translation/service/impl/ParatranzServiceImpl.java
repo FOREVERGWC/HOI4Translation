@@ -11,6 +11,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.hoi4translation.common.enums.WordKey;
+import com.example.hoi4translation.common.enums.WordStage;
 import com.example.hoi4translation.domain.entity.BaseEntity;
 import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.FileVO;
@@ -228,7 +229,7 @@ public class ParatranzServiceImpl implements ParatranzService {
             String original = vo.getOriginal().trim();
             String translation = vo.getTranslation().trim();
             WordKey wordKey = keyMatcherContext.determineWordKey(key);
-            words.add(Word.builder().original(original).key(wordKey).translation(translation).stage(1).build());
+            words.add(Word.builder().original(original).key(wordKey).translation(translation).stage(WordStage.TRANSLATED).build());
         }
 
         List<Word> wordList = new ArrayList<>();
@@ -242,7 +243,7 @@ public class ParatranzServiceImpl implements ParatranzService {
                     continue;
                 }
                 one.setTranslation(word.getTranslation().trim());
-                one.setStage(1);
+                one.setStage(WordStage.TRANSLATED);
                 wordList.add(one);
             } else {
                 wordList.add(word);

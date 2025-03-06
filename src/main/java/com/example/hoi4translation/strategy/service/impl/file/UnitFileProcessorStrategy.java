@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import com.example.hoi4translation.common.enums.WordKey;
+import com.example.hoi4translation.common.enums.WordStage;
 import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.strategy.service.FileProcessorStrategy;
@@ -34,7 +35,7 @@ public class UnitFileProcessorStrategy implements FileProcessorStrategy {
                 .toList();
 
         vos.stream()
-                .map(vo -> Word.builder().original(vo.getOriginal().trim()).key(wordKey).translation("").stage(0).build())
+                .map(vo -> Word.builder().original(vo.getOriginal().trim()).key(wordKey).translation("").stage(WordStage.UNTRANSLATED).build())
                 .forEach(words::add);
     }
 

@@ -1,0 +1,118 @@
+package com.example.hoi4translation.controller;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.example.hoi4translation.domain.Result;
+import com.example.hoi4translation.domain.dto.WordDto;
+import com.example.hoi4translation.domain.entity.Word;
+import com.example.hoi4translation.domain.vo.WordVo;
+import com.example.hoi4translation.service.IWordService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * <p>
+ * 词条前端控制器
+ * </p>
+ */
+@RestController
+@RequestMapping("/word")
+@Tag(name = "词条", description = "词条")
+public class WordController {
+    @Resource
+    private IWordService wordService;
+
+    /**
+     * 添加、修改词条
+     *
+     * @param word 词条
+     * @return 结果
+     */
+    @PostMapping
+    @Operation(summary = "添加、修改词条", description = "添加、修改词条", method = "POST")
+    public Result<Void> save(@RequestBody Word word) {
+        wordService.saveOrUpdate(word);
+        return Result.success();
+    }
+
+    /**
+     * 删除词条
+     *
+     * @param ids ID列表
+     * @return 结果
+     */
+    @DeleteMapping("/{ids}")
+    @Operation(summary = "删除词条", description = "删除词条", method = "DELETE")
+    public Result<Void> removeBatchByIds(@PathVariable List<Long> ids) {
+        wordService.removeBatchByIds(ids);
+        return Result.success();
+    }
+
+    /**
+     * 查询词条列表
+     *
+     * @param dto 词条
+     * @return 结果
+     */
+    @GetMapping("/list")
+    @Operation(summary = "查询词条列表", description = "查询词条列表", method = "GET")
+    public Result<List<WordVo>> getList(WordDto dto) {
+        List<WordVo> list = wordService.getList(dto);
+        return Result.success(list);
+    }
+
+    /**
+     * 查询词条分页
+     *
+     * @param dto 词条
+     * @return 结果
+     */
+    @GetMapping("/page")
+    @Operation(summary = "查询词条分页", description = "查询词条分页", method = "GET")
+    public Result<IPage<WordVo>> getPage(WordDto dto) {
+        IPage<WordVo> page = wordService.getPage(dto);
+        return Result.success(page);
+    }
+
+    /**
+     * 查询词条
+     *
+     * @param dto 词条
+     * @return 结果
+     */
+    @GetMapping
+    @Operation(summary = "查询词条", description = "查询词条", method = "GET")
+    public Result<WordVo> getOne(WordDto dto) {
+        WordVo vo = wordService.getOne(dto);
+        return Result.success(vo);
+    }
+
+//    /**
+//     * 查询词条
+//     *
+//     * @param id 主键ID
+//     * @return 结果
+//     */
+//    @GetMapping("/{id}")
+//    @Operation(summary = "查询词条", description = "查询词条", method = "GET")
+//    public Result<WordVo> getById(@PathVariable Long id) {
+//        WordVo vo = wordService.getOne(WordDto.builder().original(id).build());
+//        return Result.success(vo);
+//    }
+
+    /**
+     * 导出词条
+     *
+     * @param entity   词条
+     * @param response 响应对象
+     */
+    @GetMapping("/export")
+    @Operation(summary = "导出词条", description = "导出词条", method = "GET")
+    public void exportExcel(Word entity, HttpServletResponse response) {
+        wordService.exportExcel(entity, response);
+    }
+}

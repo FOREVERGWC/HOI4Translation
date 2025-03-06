@@ -1,5 +1,18 @@
 server:
-  port: 8080
+  port: 8081
+  servlet:
+    context-path: /
+    encoding:
+      force-response: true
+  compression:
+    enabled: true
+    mime-types: application/javascript,text/css,application/json,application/xml,text/html,text/xml,text/plain
+  tomcat:
+    uri-encoding: UTF-8
+    accept-count: 1000
+    threads:
+      max: 800
+      min-spare: 100
 
 spring:
   profiles:
@@ -15,12 +28,39 @@ spring:
     banner-mode: off
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  web:
+    resources:
+      static-locations: classpath:/static/
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
 
+logging:
+  pattern:
+    dateformat: "yyyy-MM-dd HH:mm:ss.SSS"
+  level:
+    com.baomidou.mybatisplus: DEBUG
+    com.example.hoi4translation.mapper: DEBUG
+  file:
+    name: ../logs/${spring.application.name}.log
+  logback:
+    rollingpolicy:
+      max-file-size: 500KB
+      file-name-pattern: ../logs/${spring.application.name}.%d.%i.log
 
 mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.example.hoi4translation.domain.entity
   configuration:
-    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    map-underscore-to-camel-case: true
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
   global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
     banner: off
 ---
 spring:
@@ -44,7 +84,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     name: 生产数据源
-    url: jdbc:mysql://localhost:3306/钢铁雄心4?serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/钢铁雄心4?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
     username: root
     password: root
 

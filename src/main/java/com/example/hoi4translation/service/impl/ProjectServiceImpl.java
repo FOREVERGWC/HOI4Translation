@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.text.StrPool;
 import cn.hutool.core.util.StrUtil;
 import com.example.hoi4translation.common.enums.WordKey;
+import com.example.hoi4translation.common.enums.WordStage;
 import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.StringVO;
 import com.example.hoi4translation.service.FileService;
@@ -65,10 +66,10 @@ public class ProjectServiceImpl implements ProjectService {
             String key = vo.getKey();
             String original = vo.getOriginal();
             WordKey wordKey = keyMatcherContext.determineWordKey(key);
-            words.add(Word.builder().original(original).key(wordKey).translation("").stage(0).build());
+            words.add(Word.builder().original(original).key(wordKey).translation("").stage(WordStage.UNTRANSLATED).build());
         }
 
-        List<Word> wordList = new ArrayList<>();
+        Set<Word> wordList = new HashSet<>(words);
         for (Word word : words) {
             Word one = wordService.lambdaQuery()
                     .eq(Word::getOriginal, word.getOriginal())

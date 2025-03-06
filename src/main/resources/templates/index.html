@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HOI4翻译</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css"/>
+</head>
+<body>
+<div id="app">
+    <el-segmented v-model="queryParams.stage" :options="options" block @change="getRecords"></el-segmented>
+
+    <el-table
+            v-loading="loading"
+            :cell-style="{ textAlign: 'center' }"
+            :data="records"
+            :header-cell-style="{ textAlign: 'center' }"
+            stripe
+            @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55"></el-table-column>
+        <el-table-column label="序号" type="index" width="70"></el-table-column>
+        <el-table-column label="原文" prop="original" sortable></el-table-column>
+        <el-table-column label="键值" prop="key" sortable></el-table-column>
+        <el-table-column label="译文" prop="translation" sortable>
+            <template v-slot="{ row }">
+                <div v-if="!row.edit">
+                    <span>{{ row.translation }}</span>
+                    <el-icon style="cursor: pointer;" @click="row.edit = !row.edit"><Edit /></el-icon>
+                </div>
+                <el-input v-else v-model="row.translation" @blur="() => handleSubmit(row)"></el-input>
+            </template>
+        </el-table-column>
+        <el-table-column label="状态" prop="stage"></el-table-column>
+    </el-table>
+
+    <el-pagination
+            :current-page="pagination.current"
+            :page-size="pagination.pageSize"
+            :page-sizes="[20, 30, 40, 50]"
+            :total="pagination.total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @current-change="pagination.onCurrentChange"
+            @size-change="pagination.onPageSizeChange">
+    </el-pagination>
+</div>
+</body>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/element-plus"></script>
+<script src="https://unpkg.com/@element-plus/icons-vue"></script>
+<script src="/js/hooks/usePagination/index.js"></script>
+<script src="/js/hooks/useTable/index.js"></script>
+<script src="/js/utils/request.js"></script>
+<script src="/js/api/biz/word/index.js"></script>
+<script>
+    const {createApp, onMounted, reactive, ref, toRefs} = Vue
+    const app = createApp({
+        setup() {
+            const queryParams = reactive({
+                original: null,
+                key: null,
+                translation: null,
+                stage: 'UNTRANSLATED',
+                orderBy: 'key',
+                isAsc: true
+            })
+            const options = [
+                {label: '全部', value: 'ALL'},
+                {label: '未翻译', value: 'UNTRANSLATED'},
+                {label: '已翻译', value: 'TRANSLATED'},
+                {label: '忽略', value: 'IGNORED'}
+            ]
+            const {
+                loading,
+                records,
+                getRecords,
+                pagination,
+                selectedKeys,
+                single,
+                multiple,
+                handleSelectionChange,
+                onDelete
+            } =
+                useTable(page => getWordPage({...queryParams, pageNo: page.pageNo, pageSize: page.pageSize}), {
+                    immediate: false
+                })
+
+            const handleSubmit = (row) => {
+                console.log('aaa', row)
+                // TODO 校验、保存词条
+                row.edit = false
+            }
+
+            onMounted(() => {
+                getRecords()
+            })
+
+            return {
+                queryParams,
+                options,
+                loading,
+                records,
+                getRecords,
+                pagination,
+                handleSelectionChange,
+                handleSubmit
+            }
+        }
+    })
+    app.use(ElementPlus)
+    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+        app.component(key, component)
+    }
+    app.mount("#app")
+</script>
+</html>

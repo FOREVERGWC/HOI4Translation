@@ -12,6 +12,7 @@ import com.example.hoi4translation.service.IWordService;
 import com.example.hoi4translation.service.ParatranzService;
 import com.example.hoi4translation.service.ProjectService;
 import com.example.hoi4translation.strategy.ParatranzKeyMatcherProcessorContext;
+import com.github.jeffreyning.mybatisplus.conf.EnableMPP;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+@EnableMPP
 @Slf4j
 @SpringBootTest
 class Hoi4TranslationApplicationTests {
