@@ -22,11 +22,11 @@
         <el-table-column label="键值" prop="key" sortable></el-table-column>
         <el-table-column label="译文" prop="translation" sortable>
             <template v-slot="{ row }">
-                <div v-if="!row.edit">
-                    <span>{{ row.translation }}</span>
+                <div v-if="!row.edit" style="display: flex; align-items: center;">
+                    <span style="flex: 1;">{{ row.translation }}</span>
                     <el-icon style="cursor: pointer;" @click="row.edit = !row.edit"><Edit /></el-icon>
                 </div>
-                <el-input v-else v-model="row.translation" @blur="() => handleSubmit(row)"></el-input>
+                <el-input v-else v-model="row.translation" @blur="handleSubmit(row)"></el-input>
             </template>
         </el-table-column>
         <el-table-column label="状态" prop="stage"></el-table-column>
@@ -53,6 +53,7 @@
 <script src="/js/api/biz/word/index.js"></script>
 <script>
     const {createApp, onMounted, reactive, ref, toRefs} = Vue
+    const { ElMessage } = ElementPlus
     const app = createApp({
         setup() {
             const queryParams = reactive({
@@ -88,7 +89,10 @@
                 console.log('aaa', row)
                 // TODO 校验、保存词条
                 row.edit = false
+                ElMessage.success('保存成功！')
             }
+
+            setInterval(() => getRecords(), 5000)
 
             onMounted(() => {
                 getRecords()
