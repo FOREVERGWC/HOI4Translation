@@ -35,7 +35,7 @@ public class UnitFileProcessorStrategy implements FileProcessorStrategy {
                 .toList();
 
         vos.stream()
-                .map(vo -> Word.builder().original(vo.getOriginal().trim()).key(wordKey).translation("").stage(WordStage.UNTRANSLATED).build())
+                .map(vo -> Word.builder().original(vo.getOriginal().trim()).key(wordKey.getCode()).translation("").stage(WordStage.UNTRANSLATED.getCode()).build())
                 .forEach(words::add);
     }
 

@@ -86,3 +86,29 @@ const exportWordExcel = params => {
         params: params
     })
 }
+
+/**
+ * 翻译词条
+ * @param data 词条
+ * @returns {*} 结果
+ */
+const translationWord = data => {
+    return request({
+        url: '/word/translation',
+        method: 'PATCH',
+        data: data
+    })
+}
+
+/**
+ * 还原词条
+ * @param data 词条
+ * @returns {*} 结果
+ */
+const unTranslationWord = data => {
+    return request({
+        url: '/word/un/translation',
+        method: 'PATCH',
+        data: data
+    })
+}

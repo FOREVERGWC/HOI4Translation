@@ -11,9 +11,9 @@ const useTable = (api, option) => {
 		loading.value = true
 		api({ pageNo: pagination.current, pageSize: pagination.pageSize })
 			.then(res => {
-				const list = Array.isArray(res.data) ? res.data : res.data.records
+				const list = Array.isArray(res) ? res : res.records
 				records.value = formatResult ? formatResult(list) : list
-				const total = Array.isArray(res.data) ? res.data.length : res.data.total
+				const total = Array.isArray(res) ? res.length : res.total
 				setTotal(total)
 				onSuccess && onSuccess()
 			})
@@ -44,12 +44,7 @@ const useTable = (api, option) => {
 	// 删除
 	const onDelete = (deleteApi, option) => {
 		console.log('删除', option)
-		deleteApi().then(res => {
-			if (res.code !== 200) {
-				ElMessage.error(res.msg)
-				return false
-			}
-
+		deleteApi().then(() => {
 			ElMessage.success('删除成功！')
 			selectedKeys.value = []
 			getRecords()

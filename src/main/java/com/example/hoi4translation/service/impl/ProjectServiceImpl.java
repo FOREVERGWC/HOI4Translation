@@ -18,7 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.FileFilter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -66,7 +69,12 @@ public class ProjectServiceImpl implements ProjectService {
             String key = vo.getKey();
             String original = vo.getOriginal();
             WordKey wordKey = keyMatcherContext.determineWordKey(key);
-            words.add(Word.builder().original(original).key(wordKey).translation("").stage(WordStage.UNTRANSLATED).build());
+            words.add(Word.builder()
+                    .original(original)
+                    .key(wordKey.getCode())
+                    .translation("")
+                    .stage(WordStage.UNTRANSLATED.getCode())
+                    .build());
         }
 
         Set<Word> wordList = new HashSet<>(words);

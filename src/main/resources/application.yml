@@ -19,11 +19,6 @@ spring:
     active: prod
   application:
     name: HOI4翻译
-  devtools:
-    restart:
-      enabled: true
-      additional-paths: src/main/java
-      additional-exclude: static/**
   main:
     banner-mode: off
   jackson:
@@ -34,6 +29,11 @@ spring:
   thymeleaf:
     cache: false
     prefix: classpath:/templates/
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+      exclude: WEB-INF/**
 
 logging:
   pattern:

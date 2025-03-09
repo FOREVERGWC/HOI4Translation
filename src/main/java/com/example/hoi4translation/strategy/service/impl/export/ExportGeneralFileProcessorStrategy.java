@@ -58,7 +58,7 @@ public class ExportGeneralFileProcessorStrategy implements ExportFileProcessorSt
                     String val = StrUtil.removeSuffix(StrUtil.removePrefix(stringValue, "\""), "\"").trim();
                     WordKey wordKey = keyMatcherContext.determineWordKey(newPath);
                     // TODO 反射获取bean查询优化为注入
-                    Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(val).key(wordKey).build());
+                    Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(val).key(wordKey.getCode()).build());
                     if (word == null || !Objects.equals(word.getStage(), 1)) {
                         return;
                     }
@@ -82,7 +82,7 @@ public class ExportGeneralFileProcessorStrategy implements ExportFileProcessorSt
             if (Arrays.stream(targetKey).anyMatch(target -> StrUtil.equals(path, target)) || currentPath.contains("|ordered|")) {
                 // TODO 反射获取bean查询优化为注入
                 WordKey wordKey = keyMatcherContext.determineWordKey(currentPath + "|" + key);
-                Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(key).key(wordKey).build());
+                Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(key).key(wordKey.getCode()).build());
                 if (word == null || !Objects.equals(word.getStage(), 1)) {
                     continue;
                 }

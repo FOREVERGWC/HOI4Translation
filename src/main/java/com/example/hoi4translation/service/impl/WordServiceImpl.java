@@ -1,11 +1,9 @@
 package com.example.hoi4translation.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.hoi4translation.common.enums.WordStage;
 import com.example.hoi4translation.domain.dto.WordDto;
 import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.WordVo;
@@ -16,9 +14,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>
@@ -77,11 +74,14 @@ public class WordServiceImpl extends MppServiceImpl<WordMapper, Word> implements
                 .eq(entity.getOriginal() != null, Word::getOriginal, entity.getOriginal())
                 .eq(entity.getKey() != null, Word::getKey, entity.getKey())
                 .eq(entity.getTranslation() != null, Word::getTranslation, entity.getTranslation())
-                .eq(entity.getStage() != null && entity.getStage() != WordStage.ALL, Word::getStage, entity.getStage());
+                .eq(entity.getStage() != null, Word::getStage, entity.getStage());
         if (entity instanceof WordDto dto) {
             String orderBy = dto.getOrderBy();
-            Boolean isAsc = dto.getIsAsc();
-            wrapper.orderByAsc(Word::getKey);
+            boolean isAsc = dto.getIsAsc() == null || dto.getIsAsc();
+            wrapper.orderBy(Objects.equals(orderBy, "original"), isAsc, Word::getOriginal);
+            wrapper.orderBy(Objects.equals(orderBy, "key"), isAsc, Word::getKey);
+            wrapper.orderBy(Objects.equals(orderBy, "translation"), isAsc, Word::getTranslation);
+            wrapper.orderBy(Objects.equals(orderBy, "stage"), isAsc, Word::getStage);
         }
         return wrapper;
     }

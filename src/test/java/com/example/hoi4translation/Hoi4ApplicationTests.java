@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @EnableMPP
 @Slf4j
@@ -105,13 +106,13 @@ class Hoi4ApplicationTests {
             for (StringVO vo : stringList) {
                 String fileName = vo.getFile().getName();
                 WordKey wordKey = paratranzKeyMatcherProcessorContext.determineWordKey(fileName, vo.getKey());
-                if (wordKey != word.getKey()) {
+                if (!Objects.equals(wordKey.getCode(), word.getKey())) {
                     continue;
                 }
                 if (StrUtil.isBlank(vo.getTranslation())) {
                     continue;
                 }
-                System.out.println("UPDATE `钢铁雄心4`.`word` SET `translation` = '" + vo.getTranslation() + "', `stage` = 1 WHERE `original` = '" + word.getOriginal().replaceAll("'", "''") + "' AND `key` = " + word.getKey().getCode() + ";");
+                System.out.println("UPDATE `钢铁雄心4`.`word` SET `translation` = '" + vo.getTranslation() + "', `stage` = 1 WHERE `original` = '" + word.getOriginal().replaceAll("'", "''") + "' AND `key` = " + word.getKey() + ";");
                 break;
             }
         }

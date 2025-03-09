@@ -55,7 +55,7 @@ public class ExportUnitFileProcessorStrategy implements ExportFileProcessorStrat
                 if (ReUtil.isMatch("\"[^\"]*\"", stringValue) && !stringValue.contains("_")) {
                     String val = StrUtil.removeSuffix(StrUtil.removePrefix(stringValue, "\""), "\"").trim();
                     // TODO 反射获取bean查询优化为注入
-                    Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(val).key(wordKey).build());
+                    Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(val).key(wordKey.getCode()).build());
                     if (word == null || !Objects.equals(word.getStage(), 1)) {
                         return;
                     }
@@ -78,7 +78,7 @@ public class ExportUnitFileProcessorStrategy implements ExportFileProcessorStrat
             String key = StrUtil.removeSuffix(StrUtil.removePrefix(String.valueOf(object), "\""), "\"").trim();
             if (Arrays.stream(targetKey).anyMatch(target -> StrUtil.equals(path, target)) || currentPath.contains("|ordered|")) {
                 // TODO 反射获取bean查询优化为注入
-                Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(key).key(wordKey).build());
+                Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(key).key(wordKey.getCode()).build());
                 if (word == null || !Objects.equals(word.getStage(), 1)) {
                     continue;
                 }

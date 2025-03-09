@@ -45,7 +45,7 @@ public class Word implements Serializable {
      */
     @MppMultiId
     @TableField("`key`")
-    private WordKey key;
+    private Integer key;
     /**
      * 译文
      */
@@ -53,12 +53,12 @@ public class Word implements Serializable {
     /**
      * 状态(0未翻译、1已翻译、2忽略)
      */
-    private WordStage stage;
+    private Integer stage;
 
     @TableField(exist = false)
     private String normalizedOriginal;
 
-    public Word(String original, WordKey key, String translation, WordStage stage) {
+    public Word(String original, Integer key, String translation, Integer stage) {
         this.original = original;
         this.key = key;
         this.translation = translation;
@@ -70,14 +70,14 @@ public class Word implements Serializable {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         Word word = (Word) object;
-        if (Objects.equals(original, word.original) && key == word.key) {
+        if (Objects.equals(original, word.original) && Objects.equals(key, word.key)) {
             return true;
         }
         String normalizedOriginal = Normalizer.normalize(original, Normalizer.Form.NFD);
         String originalWithoutAccents = normalizedOriginal.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
         String normalizedOtherOriginal = Normalizer.normalize(word.original, Normalizer.Form.NFD);
         String otherOriginalWithoutAccents = normalizedOtherOriginal.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-        return Objects.equals(originalWithoutAccents, otherOriginalWithoutAccents) && key == word.key;
+        return Objects.equals(originalWithoutAccents, otherOriginalWithoutAccents) && Objects.equals(key, word.key);
     }
 
     @Override

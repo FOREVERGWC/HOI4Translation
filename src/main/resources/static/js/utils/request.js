@@ -36,9 +36,12 @@ request.interceptors.response.use(
         }
         if (res.code === 401) {
             ElMessage.error(res.msg)
-            // router.push('/login')
+            return Promise.reject(res.msg)
+        } else if (res.code === 500) {
+            ElMessage.error(res.msg)
+            return Promise.reject(res.msg)
         }
-        return res
+        return res.data
     },
     error => {
         console.error(`响应错误：${error}`)

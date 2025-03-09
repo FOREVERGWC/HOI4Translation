@@ -14,22 +14,74 @@
             :cell-style="{ textAlign: 'center' }"
             :data="records"
             :header-cell-style="{ textAlign: 'center' }"
+            :default-sort="{ prop: queryParams.orderBy, order: queryParams.isAsc ? 'ascending' : 'descending' }"
             stripe
-            @selection-change="handleSelectionChange">
+            @selection-change="handleSelectionChange"
+            @sort-change="handleSortChange">
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column label="序号" type="index" width="70"></el-table-column>
         <el-table-column label="原文" prop="original" sortable></el-table-column>
-        <el-table-column label="键值" prop="key" sortable></el-table-column>
+        <el-table-column label="键值" prop="key" sortable>
+            <template v-slot="{ row }">
+                <span v-if="row.key === 0">其他</span>
+                <span v-else-if="row.key === 1">人物</span>
+                <span v-else-if="row.key === 2">地名</span>
+                <span v-else-if="row.key === 3">政党</span>
+                <span v-else-if="row.key === 4">部队</span>
+                <span v-else-if="row.key === 5">文本</span>
+                <span v-else-if="row.key === 6">装备</span>
+                <span v-else-if="row.key === 7">间谍机构</span>
+                <span v-else-if="row.key === 8">阵营</span>
+                <span v-else-if="row.key === 9">舰名</span>
+                <span v-else-if="row.key === 10">人名</span>
+                <span v-else-if="row.key === 11">呼号</span>
+                <span v-else-if="row.key === 12">舰队</span>
+                <span v-else-if="row.key === 13">飞行联队</span>
+                <span v-else-if="row.key === 14">列车炮</span>
+                <span v-else-if="row.key === 15">部队经历</span>
+                <span v-else-if="row.key === 16">工业制造商</span>
+                <span v-else-if="row.key === 17">装备制造商</span>
+                <span v-else-if="row.key === 18">飞机制造商</span>
+                <span v-else-if="row.key === 19">海军制造商</span>
+                <span v-else-if="row.key === 20">民族精神</span>
+                <span v-else-if="row.key === 21">研究加成</span>
+                <span v-else-if="row.key === 22">间谍代号</span>
+                <span v-else-if="row.key === 23">行动</span>
+                <span v-else-if="row.key === 24">词缀</span>
+                <span v-else>未知</span>
+            </template>
+        </el-table-column>
         <el-table-column label="译文" prop="translation" sortable>
             <template v-slot="{ row }">
                 <div v-if="!row.edit" style="display: flex; align-items: center;">
-                    <span style="flex: 1;">{{ row.translation }}</span>
-                    <el-icon style="cursor: pointer;" @click="row.edit = !row.edit"><Edit /></el-icon>
+                    <span :style="row.stage === 1 ? 'flex: 1;' : `flex: 1; color: #CDD0D6;`">{{ row.translation
+                        }}</span>
+                    <el-icon style="cursor: pointer;" @click="row.edit = !row.edit">
+                        <Edit/>
+                    </el-icon>
                 </div>
                 <el-input v-else v-model="row.translation" @blur="handleSubmit(row)"></el-input>
             </template>
         </el-table-column>
-        <el-table-column label="状态" prop="stage"></el-table-column>
+        <el-table-column label="状态" prop="stage">
+            <template v-slot="{ row }">
+                <span v-if="row.stage === 0">未翻译</span>
+                <span v-else-if="row.stage === 1">已翻译</span>
+                <span v-else-if="row.stage === 2">忽略</span>
+                <span v-else>未知</span>
+            </template>
+        </el-table-column>
+        <el-table-column label="操作" width="180">
+            <template v-slot="{ row }">
+                <el-popconfirm title="确认还原该词条吗？" @confirm="handleUnTranslated(row)">
+                    <template #reference>
+                        <el-button v-if="row.stage !== 0" icon="Refresh" plain style="margin-left: 10px" type="danger">
+                            还原
+                        </el-button>
+                    </template>
+                </el-popconfirm>
+            </template>
+        </el-table-column>
     </el-table>
 
     <el-pagination
@@ -53,22 +105,22 @@
 <script src="/js/api/biz/word/index.js"></script>
 <script>
     const {createApp, onMounted, reactive, ref, toRefs} = Vue
-    const { ElMessage } = ElementPlus
+    const {ElMessage} = ElementPlus
     const app = createApp({
         setup() {
             const queryParams = reactive({
                 original: null,
                 key: null,
                 translation: null,
-                stage: 'UNTRANSLATED',
+                stage: null,
                 orderBy: 'key',
                 isAsc: true
             })
             const options = [
-                {label: '全部', value: 'ALL'},
-                {label: '未翻译', value: 'UNTRANSLATED'},
-                {label: '已翻译', value: 'TRANSLATED'},
-                {label: '忽略', value: 'IGNORED'}
+                {label: '全部', value: null},
+                {label: '未翻译', value: 0},
+                {label: '已翻译', value: 1},
+                {label: '忽略', value: 2}
             ]
             const {
                 loading,
@@ -86,13 +138,27 @@
                 })
 
             const handleSubmit = (row) => {
-                console.log('aaa', row)
-                // TODO 校验、保存词条
-                row.edit = false
-                ElMessage.success('保存成功！')
+                translationWord(row).then(() => {
+                    ElMessage.success('保存成功！')
+                }).finally(() => {
+                    row.edit = false
+                    getRecords()
+                })
             }
 
-            setInterval(() => getRecords(), 5000)
+            const handleUnTranslated = (row) => {
+                unTranslationWord(row).then(() => {
+                    ElMessage.success('还原成功！')
+                }).finally(() => {
+                    getRecords()
+                })
+            }
+
+            const handleSortChange = (data) => {
+                queryParams.orderBy = data.prop
+                queryParams.isAsc = data.order === 'ascending'
+                getRecords()
+            }
 
             onMounted(() => {
                 getRecords()
@@ -106,7 +172,9 @@
                 getRecords,
                 pagination,
                 handleSelectionChange,
-                handleSubmit
+                handleSubmit,
+                handleUnTranslated,
+                handleSortChange
             }
         }
     })

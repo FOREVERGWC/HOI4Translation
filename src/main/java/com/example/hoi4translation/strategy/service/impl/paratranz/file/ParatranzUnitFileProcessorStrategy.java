@@ -30,7 +30,7 @@ public class ParatranzUnitFileProcessorStrategy implements ParatranzFileProcesso
                 .flatMap(List::stream)
                 .toList();
         List<Word> newWords = voList.stream()
-                .map(vo -> new Word(vo.getOriginal().trim(), wordKey, vo.getTranslation().trim(), WordStage.TRANSLATED))
+                .map(vo -> new Word(vo.getOriginal().trim(), wordKey.getCode(), vo.getTranslation().trim(), WordStage.TRANSLATED.getCode()))
                 .toList();
         words.addAll(newWords);
     }

@@ -1,8 +1,11 @@
 package com.example.hoi4translation.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.example.hoi4translation.common.enums.WordStage;
 import com.example.hoi4translation.domain.Result;
 import com.example.hoi4translation.domain.dto.WordDto;
+import com.example.hoi4translation.domain.dto.WordTranslationDto;
+import com.example.hoi4translation.domain.dto.WordUnTranslationDto;
 import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.WordVo;
 import com.example.hoi4translation.service.IWordService;
@@ -10,6 +13,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.BeanUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,18 +31,18 @@ public class WordController {
     @Resource
     private IWordService wordService;
 
-    /**
-     * 添加、修改词条
-     *
-     * @param word 词条
-     * @return 结果
-     */
-    @PostMapping
-    @Operation(summary = "添加、修改词条", description = "添加、修改词条", method = "POST")
-    public Result<Void> save(@RequestBody Word word) {
-        wordService.saveOrUpdate(word);
-        return Result.success();
-    }
+//    /**
+//     * 添加、修改词条
+//     *
+//     * @param word 词条
+//     * @return 结果
+//     */
+//    @PostMapping
+//    @Operation(summary = "添加、修改词条", description = "添加、修改词条", method = "POST")
+//    public Result<Void> save(@RequestBody Word word) {
+//        wordService.saveOrUpdate(word);
+//        return Result.success();
+//    }
 
     /**
      * 删除词条
@@ -114,5 +119,37 @@ public class WordController {
     @Operation(summary = "导出词条", description = "导出词条", method = "GET")
     public void exportExcel(Word entity, HttpServletResponse response) {
         wordService.exportExcel(entity, response);
+    }
+
+    /**
+     * 翻译词条
+     *
+     * @param dto 词条
+     * @return 结果
+     */
+    @PatchMapping("/translation")
+    @Operation(summary = "翻译词条", description = "翻译词条", method = "PATCH")
+    public Result<Void> handleTranslation(@Validated @RequestBody WordTranslationDto dto) {
+        Word word = new Word();
+        BeanUtils.copyProperties(dto, word);
+        word.setStage(WordStage.TRANSLATED.getCode());
+        wordService.updateByMultiId(word);
+        return Result.success();
+    }
+
+    /**
+     * 还原词条
+     *
+     * @param dto 词条
+     * @return 结果
+     */
+    @PatchMapping("/un/translation")
+    @Operation(summary = "还原词条", description = "还原词条", method = "PATCH")
+    public Result<Void> handleUnTranslation(@Validated @RequestBody WordUnTranslationDto dto) {
+        Word word = new Word();
+        BeanUtils.copyProperties(dto, word);
+        word.setStage(WordStage.UNTRANSLATED.getCode());
+        wordService.updateByMultiId(word);
+        return Result.success();
     }
 }

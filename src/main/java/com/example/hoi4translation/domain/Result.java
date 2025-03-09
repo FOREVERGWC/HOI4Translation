@@ -1,5 +1,6 @@
 package com.example.hoi4translation.domain;
 
+import com.example.hoi4translation.common.enums.ResultCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -106,6 +107,17 @@ public class Result<T> implements Serializable {
      */
     public static <Void> Result<Void> error(String msg) {
         return error(500, msg);
+    }
+
+    /**
+     * 消息返回实体
+     *
+     * @param codeEnum 消息响应码
+     * @param <Void>   空泛型
+     * @return 响应结果
+     */
+    public static <Void> Result<Void> error(ResultCode codeEnum) {
+        return error(codeEnum.getCode(), codeEnum.getMsg());
     }
 
     /**

@@ -229,7 +229,12 @@ public class ParatranzServiceImpl implements ParatranzService {
             String original = vo.getOriginal().trim();
             String translation = vo.getTranslation().trim();
             WordKey wordKey = keyMatcherContext.determineWordKey(key);
-            words.add(Word.builder().original(original).key(wordKey).translation(translation).stage(WordStage.TRANSLATED).build());
+            words.add(Word.builder()
+                    .original(original)
+                    .key(wordKey.getCode())
+                    .translation(translation)
+                    .stage(WordStage.TRANSLATED.getCode())
+                    .build());
         }
 
         List<Word> wordList = new ArrayList<>();
@@ -243,7 +248,7 @@ public class ParatranzServiceImpl implements ParatranzService {
                     continue;
                 }
                 one.setTranslation(word.getTranslation().trim());
-                one.setStage(WordStage.TRANSLATED);
+                one.setStage(WordStage.TRANSLATED.getCode());
                 wordList.add(one);
             } else {
                 wordList.add(word);
