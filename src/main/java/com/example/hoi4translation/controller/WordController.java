@@ -44,18 +44,18 @@ public class WordController {
 //        return Result.success();
 //    }
 
-    /**
-     * 删除词条
-     *
-     * @param ids ID列表
-     * @return 结果
-     */
-    @DeleteMapping("/{ids}")
-    @Operation(summary = "删除词条", description = "删除词条", method = "DELETE")
-    public Result<Void> removeBatchByIds(@PathVariable List<Long> ids) {
-        wordService.removeBatchByIds(ids);
-        return Result.success();
-    }
+//    /**
+//     * 删除词条
+//     *
+//     * @param ids ID列表
+//     * @return 结果
+//     */
+//    @DeleteMapping("/{ids}")
+//    @Operation(summary = "删除词条", description = "删除词条", method = "DELETE")
+//    public Result<Void> removeBatchByIds(@PathVariable List<Long> ids) {
+//        wordService.removeBatchByIds(ids);
+//        return Result.success();
+//    }
 
     /**
      * 查询词条列表
@@ -109,17 +109,17 @@ public class WordController {
 //        return Result.success(vo);
 //    }
 
-    /**
-     * 导出词条
-     *
-     * @param entity   词条
-     * @param response 响应对象
-     */
-    @GetMapping("/export")
-    @Operation(summary = "导出词条", description = "导出词条", method = "GET")
-    public void exportExcel(Word entity, HttpServletResponse response) {
-        wordService.exportExcel(entity, response);
-    }
+//    /**
+//     * 导出词条
+//     *
+//     * @param entity   词条
+//     * @param response 响应对象
+//     */
+//    @GetMapping("/export")
+//    @Operation(summary = "导出词条", description = "导出词条", method = "GET")
+//    public void exportExcel(Word entity, HttpServletResponse response) {
+//        wordService.exportExcel(entity, response);
+//    }
 
     /**
      * 翻译词条
