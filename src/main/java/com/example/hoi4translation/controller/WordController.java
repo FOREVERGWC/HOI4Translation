@@ -12,7 +12,6 @@ import com.example.hoi4translation.service.IWordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -146,9 +145,11 @@ public class WordController {
     @PatchMapping("/un/translation")
     @Operation(summary = "还原词条", description = "还原词条", method = "PATCH")
     public Result<Void> handleUnTranslation(@Validated @RequestBody WordUnTranslationDto dto) {
-        Word word = new Word();
-        BeanUtils.copyProperties(dto, word);
-        word.setStage(WordStage.UNTRANSLATED.getCode());
+        Word word = Word.builder()
+                .original(dto.getOriginal())
+                .key(dto.getKey())
+                .stage(WordStage.UNTRANSLATED.getCode())
+                .build();
         wordService.updateByMultiId(word);
         return Result.success();
     }
