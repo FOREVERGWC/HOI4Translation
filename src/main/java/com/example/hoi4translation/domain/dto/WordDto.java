@@ -1,7 +1,5 @@
 package com.example.hoi4translation.domain.dto;
 
-import com.example.hoi4translation.domain.entity.Word;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -9,6 +7,7 @@ import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -24,18 +23,32 @@ import java.util.Map;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = false)
 @Schema(name = "词条实体", description = "词条")
-public class WordDto extends Word {
+public class WordDto implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     /**
+     * 原文
+     */
+    private SuperQuery original;
+    /**
+     * 键值
+     */
+    private Integer key;
+    /**
+     * 译文
+     */
+    private SuperQuery translation;
+    /**
+     * 状态(0未翻译、1已翻译、2忽略)
+     */
+    private Integer stage;
+    /**
      * 页码
      */
-    @JsonIgnore
     private Integer pageNo;
     /**
      * 页面大小
      */
-    @JsonIgnore
     private Integer pageSize;
     /**
      * 排序字段

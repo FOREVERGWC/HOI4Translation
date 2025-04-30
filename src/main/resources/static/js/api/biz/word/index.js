@@ -38,14 +38,14 @@ const getWordList = params => {
 
 /**
  * 查询词条分页
- * @param params 词条
+ * @param data 词条
  * @returns {*} 结果
  */
-const getWordPage = params => {
+const getWordPage = data => {
     return request({
         url: '/word/page',
-        method: 'GET',
-        params: params
+        method: 'POST',
+        data: data
     })
 }
 

@@ -1,5 +1,6 @@
 server:
-  port: 8081
+  port: 443
+  address: 0.0.0.0
   servlet:
     context-path: /
     encoding:
@@ -13,6 +14,11 @@ server:
     threads:
       max: 800
       min-spare: 100
+  ssl:
+    enabled: true
+    key-store: classpath:ssl/hoi4.top.jks
+    key-store-password: 0r6vdvj2
+    key-store-type: JKS
 
 spring:
   profiles:

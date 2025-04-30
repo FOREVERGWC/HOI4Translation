@@ -1,5 +1,7 @@
 package com.example.hoi4translation.domain.entity;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.hoi4translation.common.enums.WordKey;
@@ -37,24 +39,31 @@ public class Word implements Serializable {
     /**
      * 原文
      */
+    @ExcelProperty(value = "原文")
     @MppMultiId
     @TableField
     private String original;
     /**
      * 键值
      */
+    @ExcelProperty(value = "键值")
     @MppMultiId
     @TableField("`key`")
     private Integer key;
     /**
      * 译文
      */
+    @ExcelProperty(value = "译文")
     private String translation;
     /**
      * 状态(0未翻译、1已翻译、2忽略)
      */
+    @ExcelProperty(value = "状态")
     private Integer stage;
-
+    /**
+     * normalizedOriginal
+     */
+    @ExcelIgnore
     @TableField(exist = false)
     private String normalizedOriginal;
 

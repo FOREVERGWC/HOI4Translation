@@ -12,6 +12,7 @@ import com.example.hoi4translation.service.IWordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -75,9 +76,9 @@ public class WordController {
      * @param dto 词条
      * @return 结果
      */
-    @GetMapping("/page")
+    @PostMapping("/page")
     @Operation(summary = "查询词条分页", description = "查询词条分页", method = "GET")
-    public Result<IPage<WordVo>> getPage(WordDto dto) {
+    public Result<IPage<WordVo>> getPage(@RequestBody WordDto dto) {
         IPage<WordVo> page = wordService.getPage(dto);
         return Result.success(page);
     }
@@ -108,17 +109,17 @@ public class WordController {
 //        return Result.success(vo);
 //    }
 
-//    /**
-//     * 导出词条
-//     *
-//     * @param entity   词条
-//     * @param response 响应对象
-//     */
-//    @GetMapping("/export")
-//    @Operation(summary = "导出词条", description = "导出词条", method = "GET")
-//    public void exportExcel(Word entity, HttpServletResponse response) {
-//        wordService.exportExcel(entity, response);
-//    }
+    /**
+     * 导出词条
+     *
+     * @param dto      词条
+     * @param response 响应对象
+     */
+    @PostMapping("/export")
+    @Operation(summary = "导出词条", description = "导出词条", method = "GET")
+    public void exportExcel(@RequestBody WordDto dto, HttpServletResponse response) {
+        wordService.exportExcel(dto, response);
+    }
 
     /**
      * 翻译词条

@@ -9,6 +9,41 @@
 <div id="app">
     <el-segmented v-model="queryParams.stage" :options="options" block @change="getRecords"></el-segmented>
 
+    <el-row :gutter="24" style="margin-top: 24px; margin-bottom: 24px;">
+        <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
+            <el-input v-model="queryParams.original.value" clearable placeholder="请输入原文">
+                <template #append>
+                    <el-select v-model="queryParams.original.operator" placeholder="查询方式" style="width: 115px;">
+                        <el-option label="等于" value="eq"></el-option>
+                        <el-option label="模糊查询" value="like"></el-option>
+                    </el-select>
+                </template>
+            </el-input>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
+            <el-input v-model="queryParams.translation.value" clearable placeholder="请输入译文">
+                <template #append>
+                    <el-select v-model="queryParams.translation.operator" placeholder="查询方式" style="width: 115px;">
+                        <el-option label="等于" value="eq"></el-option>
+                        <el-option label="模糊查询" value="like"></el-option>
+                    </el-select>
+                </template>
+            </el-input>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
+            <el-select v-model="queryParams.key" clearable placeholder="请选择键值">
+                <el-option v-for="item in keyList" :key="item.value" :label="item.label"
+                           :value="item.value"></el-option>
+            </el-select>
+        </el-col>
+    </el-row>
+
+    <el-row :gutter="24" style="margin-top: 24px; margin-bottom: 24px;">
+        <el-col :lg="2" :md="2" :sm="12" :xl="2" :xs="12">
+            <el-button icon="Download" plain @click="handleExport">导出</el-button>
+        </el-col>
+    </el-row>
+
     <el-table
             v-loading="loading"
             :cell-style="{ textAlign: 'center' }"
@@ -20,45 +55,41 @@
             @sort-change="handleSortChange">
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column label="序号" type="index" width="70"></el-table-column>
-        <el-table-column label="原文" prop="original" sortable></el-table-column>
+        <el-table-column label="原文" prop="original" sortable>
+            <template v-slot="{ row }">
+                <div style="display: flex; align-items: center;">
+                    <span style="flex: 1;">{{ row.original }}</span>
+                    <el-tooltip effect="light" content="复制" placement="top-start">
+                        <el-icon size="large" style="cursor: pointer;" @click="handleCopy(row.original)">
+                            <Copy-Document/>
+                        </el-icon>
+                    </el-tooltip>
+                </div>
+            </template>
+        </el-table-column>
         <el-table-column label="键值" prop="key" sortable>
             <template v-slot="{ row }">
-                <span v-if="row.key === 0">其他</span>
-                <span v-else-if="row.key === 1">人物</span>
-                <span v-else-if="row.key === 2">地名</span>
-                <span v-else-if="row.key === 3">政党</span>
-                <span v-else-if="row.key === 4">部队</span>
-                <span v-else-if="row.key === 5">文本</span>
-                <span v-else-if="row.key === 6">装备</span>
-                <span v-else-if="row.key === 7">间谍机构</span>
-                <span v-else-if="row.key === 8">阵营</span>
-                <span v-else-if="row.key === 9">舰名</span>
-                <span v-else-if="row.key === 10">人名</span>
-                <span v-else-if="row.key === 11">呼号</span>
-                <span v-else-if="row.key === 12">舰队</span>
-                <span v-else-if="row.key === 13">飞行联队</span>
-                <span v-else-if="row.key === 14">列车炮</span>
-                <span v-else-if="row.key === 15">部队经历</span>
-                <span v-else-if="row.key === 16">工业制造商</span>
-                <span v-else-if="row.key === 17">装备制造商</span>
-                <span v-else-if="row.key === 18">飞机制造商</span>
-                <span v-else-if="row.key === 19">海军制造商</span>
-                <span v-else-if="row.key === 20">民族精神</span>
-                <span v-else-if="row.key === 21">研究加成</span>
-                <span v-else-if="row.key === 22">间谍代号</span>
-                <span v-else-if="row.key === 23">行动</span>
-                <span v-else-if="row.key === 24">词缀</span>
-                <span v-else>未知</span>
+                {{ keyList.find(item => item.value === row.key)?.label || '未知' }}
             </template>
         </el-table-column>
         <el-table-column label="译文" prop="translation" sortable>
             <template v-slot="{ row }">
                 <div v-if="!row.edit" style="display: flex; align-items: center;">
-                    <span :style="row.stage === 1 ? 'flex: 1;' : `flex: 1; color: #CDD0D6;`">{{ row.translation
-                        }}</span>
-                    <el-icon style="cursor: pointer;" @click="row.edit = !row.edit">
-                        <Edit/>
-                    </el-icon>
+                    <span :style="row.stage === 1 ? 'flex: 1;' : `flex: 1; color: #CDD0D6;`">
+                        {{ row.translation }}
+                    </span>
+                    <div style="display: flex; gap: 16px;">
+                        <el-tooltip effect="light" content="编辑" placement="top-start">
+                            <el-icon size="large" style="cursor: pointer;" @click="row.edit = !row.edit">
+                                <Edit/>
+                            </el-icon>
+                        </el-tooltip>
+                        <el-tooltip effect="light" content="黏贴" placement="top-start">
+                            <el-icon size="large" style="cursor: pointer;" @click="handlePaste(row)">
+                                <Document-Copy/>
+                            </el-icon>
+                        </el-tooltip>
+                    </div>
                 </div>
                 <el-input v-else v-model="row.translation" @blur="handleSubmit(row)"></el-input>
             </template>
@@ -97,25 +128,58 @@
 </body>
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script src="https://unpkg.com/element-plus"></script>
-<script src="https://unpkg.com/@element-plus/icons-vue"></script>
+<script src="https://unpkg.com/element-plus@2.9.9/dist/index.full.js"></script>
+<script src="https://unpkg.com/@element-plus/icons-vue@2.3.1/dist/index.iife.min.js"></script>
 <script src="/js/hooks/usePagination/index.js"></script>
 <script src="/js/hooks/useTable/index.js"></script>
 <script src="/js/utils/request.js"></script>
 <script src="/js/api/biz/word/index.js"></script>
 <script>
-    const {createApp, onMounted, reactive, ref, toRefs} = Vue
+    const {createApp, onMounted, reactive, ref, toRefs, watch} = Vue
     const {ElMessage} = ElementPlus
     const app = createApp({
         setup() {
             const queryParams = reactive({
-                original: null,
+                original: {
+                    value: null,
+                    operator: 'eq'
+                },
                 key: null,
-                translation: null,
+                translation: {
+                    value: null,
+                    operator: 'eq'
+                },
                 stage: null,
                 orderBy: 'key',
                 isAsc: true
             })
+            const keyList = [
+                {label: '其他', value: 0},
+                {label: '人物', value: 1},
+                {label: '地名', value: 2},
+                {label: '政党', value: 3},
+                {label: '部队', value: 4},
+                {label: '文本', value: 5},
+                {label: '装备', value: 6},
+                {label: '间谍机构', value: 7},
+                {label: '阵营', value: 8},
+                {label: '舰名', value: 9},
+                {label: '人名', value: 10},
+                {label: '呼号', value: 11},
+                {label: '舰队', value: 12},
+                {label: '飞行联队', value: 13},
+                {label: '列车炮', value: 14},
+                {label: '部队经历', value: 15},
+                {label: '工业制造商', value: 16},
+                {label: '装备制造商', value: 17},
+                {label: '飞机制造商', value: 18},
+                {label: '海军制造商', value: 19},
+                {label: '民族精神', value: 20},
+                {label: '研究加成', value: 21},
+                {label: '间谍代号', value: 22},
+                {label: '行动', value: 23},
+                {label: '词缀', value: 24}
+            ]
             const options = [
                 {label: '全部', value: null},
                 {label: '未翻译', value: 0},
@@ -134,8 +198,22 @@
                 onDelete
             } =
                 useTable(page => getWordPage({...queryParams, pageNo: page.pageNo, pageSize: page.pageSize}), {
-                    immediate: false
+                    immediate: true
                 })
+
+            const handleCopy = async (text) => {
+                await navigator.clipboard.writeText(text)
+                ElMessage.success("已复制到剪切板！")
+            }
+
+            const handlePaste = async (row) => {
+                row.translation = await navigator.clipboard.readText()
+                translationWord(row).then(() => {
+                    ElMessage.success('保存成功！')
+                }).finally(() => {
+                    getRecords()
+                })
+            }
 
             const handleSubmit = (row) => {
                 translationWord(row).then(() => {
@@ -157,24 +235,53 @@
             const handleSortChange = (data) => {
                 queryParams.orderBy = data.prop
                 queryParams.isAsc = data.order === 'ascending'
-                getRecords()
             }
 
-            onMounted(() => {
-                getRecords()
-            })
+            const handleExport = async () => {
+                try {
+                    const response = await axios.post(
+                        '/word/export',
+                        queryParams,
+                        {
+                            responseType: 'blob',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+
+                    const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'export.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error('导出失败', error);
+                }
+            }
+
+            watch(() => queryParams, () => getRecords(), {deep: true})
 
             return {
                 queryParams,
+                keyList,
                 options,
                 loading,
                 records,
                 getRecords,
                 pagination,
                 handleSelectionChange,
+                handleCopy,
+                handlePaste,
                 handleSubmit,
                 handleUnTranslated,
-                handleSortChange
+                handleSortChange,
+                handleExport
             }
         }
     })

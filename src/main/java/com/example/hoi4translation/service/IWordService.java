@@ -42,8 +42,8 @@ public interface IWordService extends IMppService<Word> {
     /**
      * 导出词条
      *
-     * @param entity   词条
+     * @param dto      词条
      * @param response 响应对象
      */
-    void exportExcel(Word entity, HttpServletResponse response);
+    void exportExcel(WordDto dto, HttpServletResponse response);
 }
