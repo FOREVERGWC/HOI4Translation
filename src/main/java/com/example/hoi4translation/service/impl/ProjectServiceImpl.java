@@ -77,17 +77,20 @@ public class ProjectServiceImpl implements ProjectService {
                     .build());
         }
 
-        Set<Word> wordList = new HashSet<>(words);
+        Set<Word> wordList = new HashSet<>();
         for (Word word : words) {
             Word one = wordService.lambdaQuery()
                     .eq(Word::getOriginal, word.getOriginal())
                     .eq(Word::getKey, word.getKey())
                     .one();
+
             if (one != null) {
                 continue;
             }
+
             wordList.add(word);
         }
+
         wordService.saveOrUpdateBatchByMultiId(wordList);
         end = System.currentTimeMillis();
         log.info("【写入数据库】耗时：{}秒", (end - start) * 1.0 / 1000);

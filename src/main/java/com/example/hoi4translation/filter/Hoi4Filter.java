@@ -17,6 +17,7 @@ public class Hoi4Filter implements FileFilter {
                 "common/decisions/",
                 "common/ideas/",
                 "common/intelligence_agencies/",
+                "common/military_industrial_organization/organizations/",
                 "common/names/",
                 "common/national_focus/",
                 "common/on_actions/",

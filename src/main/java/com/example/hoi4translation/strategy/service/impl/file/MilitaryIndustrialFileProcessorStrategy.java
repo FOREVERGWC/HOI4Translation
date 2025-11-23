@@ -7,6 +7,7 @@ import com.example.hoi4translation.common.enums.WordKey;
 import com.example.hoi4translation.common.enums.WordStage;
 import com.example.hoi4translation.domain.entity.Word;
 import com.example.hoi4translation.domain.vo.StringVO;
+import com.example.hoi4translation.strategy.KeyMatcherContext;
 import com.example.hoi4translation.strategy.service.FileProcessorStrategy;
 import com.example.hoi4translation.test.ParadoxParserUtil;
 import com.example.hoi4translation.utils.ParadoxUtils;
@@ -17,13 +18,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class UnitFileProcessorStrategy implements FileProcessorStrategy {
-    private final WordKey wordKey;
+public class MilitaryIndustrialFileProcessorStrategy implements FileProcessorStrategy {
+    private final KeyMatcherContext keyMatcherContext = new KeyMatcherContext();
+
     private final String[] keys;
 
-    public UnitFileProcessorStrategy(WordKey wordKey, String... valueKeys) {
-        this.wordKey = wordKey;
-        this.keys = valueKeys;
+    public MilitaryIndustrialFileProcessorStrategy(String[] keys) {
+        this.keys = keys;
     }
 
     @Override
@@ -35,12 +36,20 @@ public class UnitFileProcessorStrategy implements FileProcessorStrategy {
                 .toList();
 
         vos.stream()
-                .map(vo -> Word.builder()
-                        .original(vo.getOriginal().trim())
-                        .key(wordKey.getCode())
-                        .translation("")
-                        .stage(WordStage.UNTRANSLATED.getCode())
-                        .build())
+                .map(vo -> {
+                    WordKey wordKey = keyMatcherContext.determineWordKey(vo.getKey());
+
+                    if (wordKey == WordKey.OTHER) {
+                        wordKey = WordKey.MIO;
+                    }
+
+                    return Word.builder()
+                            .original(vo.getOriginal().trim())
+                            .key(wordKey.getCode())
+                            .translation("")
+                            .stage(WordStage.UNTRANSLATED.getCode())
+                            .build();
+                })
                 .forEach(words::add);
     }
 

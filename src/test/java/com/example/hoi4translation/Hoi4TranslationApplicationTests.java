@@ -136,5 +136,6 @@ class Hoi4TranslationApplicationTests {
         FileUtil.clean(local_56 + "\\history");
         fileService.fileCopy(original_56, local_56, hoi4Filter);
         // TODO 添加md信息
+        // TODO 替换interface\aces.gfx中飞行员的名字key
     }
 }

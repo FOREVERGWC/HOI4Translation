@@ -116,7 +116,11 @@ public enum WordKey {
     /**
      * 词缀
      */
-    AFFIX(24, "词缀");
+    AFFIX(24, "词缀"),
+    /**
+     * 军工组织
+     */
+    MIO(25, "军工组织");
 
     private static final Map<Integer, WordKey> map = new HashMap<>();
 
