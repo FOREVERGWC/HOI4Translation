@@ -78,7 +78,7 @@ public class WordController {
      */
     @PostMapping("/page")
     @Operation(summary = "查询词条分页", description = "查询词条分页", method = "GET")
-    public Result<IPage<WordVo>> getPage(@RequestBody WordDto dto) {
+    public Result<IPage<WordVo>> getPage(@Validated @RequestBody WordDto dto) {
         IPage<WordVo> page = wordService.getPage(dto);
         return Result.success(page);
     }

@@ -2,12 +2,14 @@ package com.example.hoi4translation.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,7 +35,8 @@ public class WordDto implements Serializable {
     /**
      * 键值
      */
-    private Integer key;
+    @NotNull(message = "键值不能为空！")
+    private List<Integer> key;
     /**
      * 译文
      */

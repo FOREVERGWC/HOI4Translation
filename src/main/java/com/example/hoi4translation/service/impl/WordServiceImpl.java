@@ -117,7 +117,7 @@ public class WordServiceImpl extends MppServiceImpl<WordMapper, Word> implements
         LambdaQueryChainWrapper<Word> wrapper = lambdaQuery()
                 .eq(StrUtil.isNotBlank(originalValue) && "eq".equals(originalOperator), Word::getOriginal, originalValue)
                 .like(StrUtil.isNotBlank(originalValue) && "like".equals(originalOperator), Word::getOriginal, originalValue)
-                .eq(entity.getKey() != null, Word::getKey, entity.getKey())
+                .in(CollectionUtil.isNotEmpty(entity.getKey()), Word::getKey, entity.getKey())
                 .eq(StrUtil.isNotBlank(translationValue) && "eq".equals(translationOperator), Word::getTranslation, translationValue)
                 .like(StrUtil.isNotBlank(translationValue) && "like".equals(translationOperator), Word::getTranslation, translationValue)
                 .eq(entity.getStage() != null, Word::getStage, entity.getStage());

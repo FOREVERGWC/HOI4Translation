@@ -31,7 +31,7 @@
             </el-input>
         </el-col>
         <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
-            <el-select v-model="queryParams.key" clearable placeholder="请选择键值">
+            <el-select v-model="queryParams.key" clearable multiple placeholder="请选择键值">
                 <el-option v-for="item in keyList" :key="item.value" :label="item.label"
                            :value="item.value"></el-option>
             </el-select>
@@ -144,7 +144,7 @@
                     value: null,
                     operator: 'eq'
                 },
-                key: null,
+                key: [],
                 translation: {
                     value: null,
                     operator: 'eq'
@@ -178,7 +178,8 @@
                 {label: '研究加成', value: 21},
                 {label: '间谍代号', value: 22},
                 {label: '行动', value: 23},
-                {label: '词缀', value: 24}
+                {label: '词缀', value: 24},
+                {label: '军工组织', value: 25}
             ]
             const options = [
                 {label: '全部', value: null},

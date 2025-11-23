@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExportGeneralFileProcessorStrategy implements ExportFileProcessorStrategy {
+    private final String MIO_PATH = "\\common\\military_industrial_organization\\organizations\\";
     private final String[] keys;
     private final KeyMatcherContext keyMatcherContext = new KeyMatcherContext();
 
@@ -33,8 +34,7 @@ public class ExportGeneralFileProcessorStrategy implements ExportFileProcessorSt
         fileList.forEach(file -> {
             AtomicInteger counter = new AtomicInteger(0);
             JSONObject object = ParadoxParserUtil.parse(FileUtil.readUtf8Lines(file));
-            getString(object, "", counter, keys);
-
+            getString(file.getPath(), object, "", counter, keys);
             if (counter.get() == 0) {
                 FileUtil.del(file);
             } else {
@@ -44,11 +44,11 @@ public class ExportGeneralFileProcessorStrategy implements ExportFileProcessorSt
         });
     }
 
-    private void getString(JSONObject json, String currentPath, AtomicInteger counter, String... targetKey) {
-        json.entrySet().forEach(item -> processJsonObject(item, targetKey, currentPath, counter));
+    private void getString(String filePath, JSONObject json, String currentPath, AtomicInteger counter, String... targetKey) {
+        json.entrySet().forEach(item -> processJsonObject(filePath, item, targetKey, currentPath, counter));
     }
 
-    private void processJsonObject(Map.Entry<String, Object> item, String[] targetKey, String currentPath, AtomicInteger counter) {
+    private void processJsonObject(String filePath, Map.Entry<String, Object> item, String[] targetKey, String currentPath, AtomicInteger counter) {
         String key = item.getKey();
         Object value = item.getValue();
         String newPath = currentPath.isEmpty() ? key : currentPath + "|" + key;
@@ -57,6 +57,11 @@ public class ExportGeneralFileProcessorStrategy implements ExportFileProcessorSt
                 if (ReUtil.isMatch("\"[^\"]*\"", stringValue) && !stringValue.contains("_")) {
                     String val = StrUtil.removeSuffix(StrUtil.removePrefix(stringValue, "\""), "\"").trim();
                     WordKey wordKey = keyMatcherContext.determineWordKey(newPath);
+
+                    if (wordKey == WordKey.OTHER && filePath.contains(MIO_PATH)) {
+                        wordKey = WordKey.MIO;
+                    }
+
                     // TODO 反射获取bean查询优化为注入
                     Word word = SpringUtil.getBean(WordServiceImpl.class).selectByMultiId(Word.builder().original(val).key(wordKey.getCode()).build());
                     if (word == null || !Objects.equals(word.getStage(), 1)) {
@@ -66,7 +71,7 @@ public class ExportGeneralFileProcessorStrategy implements ExportFileProcessorSt
                     counter.incrementAndGet();
                 }
             }
-            case JSONObject object -> getString(object, newPath, counter, targetKey);
+            case JSONObject object -> getString(filePath, object, newPath, counter, targetKey);
             case JSONArray array -> processJsonArray(array, newPath, counter, targetKey);
             case null, default -> {
 //            System.out.println("其他对象：" + value);
