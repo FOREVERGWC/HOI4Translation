@@ -1,15 +1,20 @@
 package com.example.hoi4translation.filter;
 
 import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.core.util.CharUtil;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class Hoi4Filter implements FileFilter {
     private static final Set<String> files = new HashSet<>();
+
+    private static final String ACE_GFX_PATH = "interface/aces.gfx";
 
     static {
         String[] filePaths = {
@@ -38,7 +43,13 @@ public class Hoi4Filter implements FileFilter {
 
     @Override
     public boolean accept(File pathname) {
-        String path = pathname.getPath().replace(File.separator, "/");
-        return files.stream().anyMatch(file -> path.contains(file) && FileNameUtil.isType(path, "txt", "yml"));
+        String path = pathname.getPath().replace(File.separatorChar, CharUtil.SLASH);
+
+        if (path.endsWith(ACE_GFX_PATH)) {
+            return true;
+        }
+
+        return files.stream()
+                .anyMatch(file -> path.contains(file) && FileNameUtil.isType(path, "txt", "yml"));
     }
 }

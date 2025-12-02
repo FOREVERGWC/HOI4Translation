@@ -2,6 +2,7 @@ package com.example.hoi4translation.strategy;
 
 import com.example.hoi4translation.common.enums.WordKey;
 import com.example.hoi4translation.strategy.service.ExportFileProcessorStrategy;
+import com.example.hoi4translation.strategy.service.impl.export.ExportAceFileProcessorStrategy;
 import com.example.hoi4translation.strategy.service.impl.export.ExportGeneralFileProcessorStrategy;
 import com.example.hoi4translation.strategy.service.impl.export.ExportUnitFileProcessorStrategy;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class ExportFileFileProcessorContext {
         map.put("/events/", new ExportGeneralFileProcessorStrategy(keys));
         map.put("/history/countries/", new ExportGeneralFileProcessorStrategy(keys));
         map.put("/history/units/", new ExportGeneralFileProcessorStrategy(keys));
+        map.put("/interface/", new ExportAceFileProcessorStrategy());
     }
 
     public void processFiles(String directory, List<File> fileList) {

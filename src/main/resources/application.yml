@@ -17,7 +17,7 @@ server:
   ssl:
     enabled: true
     key-store: classpath:ssl/hoi4.top.jks
-    key-store-password: 0r6vdvj2
+    key-store-password: 4r7c40ey
     key-store-type: JKS
 
 spring:
