@@ -126,9 +126,9 @@ public class WordServiceImpl extends MppServiceImpl<WordMapper, Word> implements
             String orderBy = dto.getOrderBy();
             boolean isAsc = dto.getIsAsc() == null || dto.getIsAsc();
             wrapper.orderBy(Objects.equals(orderBy, "original"), isAsc, Word::getOriginal);
-            wrapper.orderBy(Objects.equals(orderBy, "key"), isAsc, Word::getKey);
+            wrapper.orderBy(Objects.equals(orderBy, "key"), isAsc, Word::getKey, Word::getOriginal);
             wrapper.orderBy(Objects.equals(orderBy, "translation"), isAsc, Word::getTranslation);
-            wrapper.orderBy(Objects.equals(orderBy, "stage"), isAsc, Word::getStage);
+            wrapper.orderBy(Objects.equals(orderBy, "stage"), isAsc, Word::getStage, Word::getKey, Word::getOriginal);
         }
 
         return wrapper;
